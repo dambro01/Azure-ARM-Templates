@@ -307,7 +307,6 @@
 			"location": "[resourceGroup().location]",
 			"dependsOn": [
 				"[resourceId('Microsoft.Compute/virtualMachines', variables('vmName'))]",
-				"[resourceId('Microsoft.Storage/storageAccounts/fileServices/shares', concat(parameters('storageUri') ,'/default/', parameters('storageUri'), parameters('fileShareName')))]",
 				"[resourceId('Microsoft.Resources/deploymentScripts', 'getSAKey')]"
 			],
 			"properties": {
