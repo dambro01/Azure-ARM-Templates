@@ -294,8 +294,8 @@
 				"forceUpdateTag": "[parameters('utcValue')]",
 				"azPowerShellVersion": "6.4",
 				"timeout": "PT30M",
-				"arguments": "[format(' -rgName {0} -storageAccountName {1}', resourceGroup().name, parameters('storageUri'))]",
-				"scriptContent": "param( [string] [Parameter(Mandatory=$true)] $rgName, [string] [Parameter(Mandatory=$true)] $storageAccountName); $ErrorActionPreference = 'Stop'; Set-AzContext -Subscription $subID; Set-AzDefault -ResourceGroupName $rgName; $storageAccountKey = (Get-AzStorageAccountKey -ResourceGroupName $rgName -Name $($storageAccountName)).Value[0]; $DeploymentScriptOutputs = @{}; $DeploymentScriptOutputs['text'] = $storageAccountKey",
+				"arguments": "[format(' -rgName {0} -storageAccountName {1} -subID {2}', resourceGroup().name, parameters('storageUri'), subscription().subscriptionId)]",
+				"scriptContent": "param( [string] [Parameter(Mandatory=$true)] $rgName, [string] [Parameter(Mandatory=$true)] $storageAccountName, [string] [Parameter(Mandatory=$true)] $subID); $ErrorActionPreference = 'Stop'; Set-AzContext -Subscription $subID; Set-AzDefault -ResourceGroupName $rgName; $storageAccountKey = (Get-AzStorageAccountKey -ResourceGroupName $rgName -Name $($storageAccountName)).Value[0]; $DeploymentScriptOutputs = @{}; $DeploymentScriptOutputs['text'] = $storageAccountKey",
 				"cleanupPreference": "OnSuccess",
 				"retentionInterval": "P1D"
 			}
