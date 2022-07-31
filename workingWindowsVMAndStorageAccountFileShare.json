@@ -1,0 +1,328 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"metadata": {
+		"description": "Creates a Windows VM and Storage Account with File Share, then connects the File Share to the server.",
+		"author": "Ryan McCallum",
+		"alias": "RYMCCALL",
+		"GitHub": "https://github.com/rjmccallumbigl/Azure-ARM-Templates",
+		"Enablement": "https://docs.microsoft.com/en-us/azure/storage/files/storage-how-to-use-files-windows",
+		"deploymentLink": "https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2f%2fraw.githubusercontent.com%2frjmccallumbigl%2fAzure-ARM-Templates%2fmain%2fworkingWindowsVMAndStorageAccountFileShare.json"
+
+	},
+	"parameters": {
+		"adminUsername": {
+			"type": "String",
+			"maxLength": 20,
+			"metadata": {
+				"description": "Username for the Virtual Machine."
+			}
+		},
+		"adminPassword": {
+			"type": "SecureString",
+			"minLength": 12,
+			"metadata": {
+				"description": "Password for the Virtual Machine."
+			}
+		},
+		"location": {
+			"defaultValue": "[resourceGroup().location]",
+			"type": "String",
+			"metadata": {
+				"description": "Location for all resources."
+			}
+		},
+		"vmSize": {
+			"defaultValue": "Standard_D2_v3",
+			"type": "String",
+			"metadata": {
+				"description": "Default VM Size"
+			}
+		},
+		"dnsNameForPublicIP": {
+			"defaultValue": "[tolower(concat('dns', uniquestring(resourceGroup().id)))]",
+			"type": "String",
+			"metadata": {
+				"description": "DNS name for the public IP"
+			}
+		},
+		"storageUri": {
+			"defaultValue": "[format('store{0}', uniqueString(resourceGroup().id))]",
+			"type": "string",
+			"metadata": {
+				"description": "Name of storage account For Boot Diagnostics and File Share"
+			}
+		},
+		"storageAccountType": {
+			"type": "string",
+			"defaultValue": "Standard_LRS",
+			"metadata": {
+				"description": "Storage Account type"
+			}
+		},
+		"fileShareName": {
+			"type": "string",
+			"maxLength": 63,
+			"minLength": 3,
+			"defaultValue": "[format('share{0}', toLower(uniqueString(resourceGroup().id)))]",
+			"metadata": {
+				"description": "Specifies the name of the File Share. File share names must be between 3 and 63 characters in length and use numbers, lower-case letters and dash (-) only."
+			}
+		},
+		"utcValue": {
+			"defaultValue": "[utcNow()]",
+			"type": "string",
+			"metadata": {
+				"description": "UTC"
+			}
+		}
+	},
+	"variables": {
+		"nicName": "myVMNic",
+		"addressPrefix": "10.0.0.0/16",
+		"subnetName": "Subnet",
+		"subnetPrefix": "10.0.0.0/24",
+		"subnetRef": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworkName'), variables('subnetName'))]",
+		"vmName": "sacDisabled",
+		"virtualNetworkName": "MyVNET",
+		"publicIPAddressName": "myPublicIP",
+		"networkSecurityGroupName": "default-NSG",
+		"userIdentity": "[tolower(concat('ui-', uniquestring(resourceGroup().id)))]",
+		"bootstrapRoleAssignmentId": "[guid(concat(resourceGroup().id, 'contributor'))]",
+		"contributorRoleDefinitionId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', 'b24988ac-6180-42a0-ab88-20f7382dd24c')]"
+	},
+	"resources": [
+		{
+			"type": "Microsoft.ManagedIdentity/userAssignedIdentities",
+			"name": "[variables('userIdentity')]",
+			"apiVersion": "2018-11-30",
+			"location": "[parameters('location')]"
+		},
+		{
+			"type": "Microsoft.Authorization/roleAssignments",
+			"apiVersion": "2018-09-01-preview",
+			"name": "[variables('bootstrapRoleAssignmentId')]",
+			"dependsOn": [
+				"[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('userIdentity'))]"
+			],
+			"properties": {
+				"roleDefinitionId": "[variables('contributorRoleDefinitionId')]",
+				"principalId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('userIdentity')), '2018-11-30').principalId]",
+				"principalType": "ServicePrincipal"
+			}
+		},
+		{
+			"type": "Microsoft.Network/publicIPAddresses",
+			"apiVersion": "2020-08-01",
+			"name": "[variables('publicIPAddressName')]",
+			"location": "[parameters('location')]",
+			"properties": {
+				"publicIPAllocationMethod": "Dynamic",
+				"dnsSettings": {
+					"domainNameLabel": "[parameters('dnsNameForPublicIP')]"
+				}
+			}
+		},
+		{
+			"type": "Microsoft.Network/networkSecurityGroups",
+			"apiVersion": "2020-08-01",
+			"name": "[variables('networkSecurityGroupName')]",
+			"location": "[parameters('location')]",
+			"properties": {
+				"securityRules": [
+					{
+						"name": "default-allow-3389",
+						"properties": {
+							"priority": 1000,
+							"access": "Allow",
+							"direction": "Inbound",
+							"destinationPortRange": "3389",
+							"protocol": "Tcp",
+							"sourceAddressPrefix": "*",
+							"sourcePortRange": "*",
+							"destinationAddressPrefix": "*"
+						}
+					}
+				]
+			}
+		},
+		{
+			"type": "Microsoft.Network/virtualNetworks",
+			"apiVersion": "2020-08-01",
+			"name": "[variables('virtualNetworkName')]",
+			"location": "[parameters('location')]",
+			"dependsOn": [
+				"[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSecurityGroupName'))]"
+			],
+			"properties": {
+				"addressSpace": {
+					"addressPrefixes": [
+						"[variables('addressPrefix')]"
+					]
+				},
+				"subnets": [
+					{
+						"name": "[variables('subnetName')]",
+						"properties": {
+							"addressPrefix": "[variables('subnetPrefix')]",
+							"networkSecurityGroup": {
+								"id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSecurityGroupName'))]"
+							}
+						}
+					}
+				]
+			}
+		},
+		{
+			"type": "Microsoft.Network/networkInterfaces",
+			"apiVersion": "2020-08-01",
+			"name": "[variables('nicName')]",
+			"location": "[parameters('location')]",
+			"dependsOn": [
+				"[variables('publicIPAddressName')]",
+				"[variables('virtualNetworkName')]"
+			],
+			"properties": {
+				"ipConfigurations": [
+					{
+						"name": "ipconfig1",
+						"properties": {
+							"privateIPAllocationMethod": "Dynamic",
+							"publicIPAddress": {
+								"id": "[resourceId('Microsoft.Network/publicIPAddresses',variables('publicIPAddressName'))]"
+							},
+							"subnet": {
+								"id": "[variables('subnetRef')]"
+							}
+						}
+					}
+				]
+			}
+		},
+		{
+			"type": "Microsoft.Storage/storageAccounts",
+			"apiVersion": "2021-06-01",
+			"name": "[parameters('storageUri')]",
+			"location": "[parameters('location')]",
+			"sku": {
+				"name": "[parameters('storageAccountType')]"
+			},
+			"kind": "StorageV2",
+			"properties": {}
+		},
+		{
+			"type": "Microsoft.Storage/storageAccounts/fileServices/shares",
+			"apiVersion": "2021-04-01",
+			"name": "[format('{0}/default/{1}', parameters('storageUri'), parameters('fileShareName'))]",
+			"dependsOn": [
+				"[resourceId('Microsoft.Storage/storageAccounts', parameters('storageUri'))]"
+			]
+		},
+		{
+			"type": "Microsoft.Compute/virtualMachines",
+			"apiVersion": "2020-12-01",
+			"name": "[variables('vmName')]",
+			"location": "[parameters('location')]",
+			"identity": {
+				"type": "UserAssigned",
+				"userAssignedIdentities": {
+					"[resourceID('Microsoft.ManagedIdentity/userAssignedIdentities/',variables('userIdentity'))]": {}
+				}
+			},
+			"dependsOn": [
+				"[variables('nicName')]",
+				"[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('userIdentity'))]"
+			],
+			"properties": {
+				"hardwareProfile": {
+					"vmSize": "[parameters('vmSize')]"
+				},
+				"osProfile": {
+					"computerName": "[variables('vmName')]",
+					"adminUsername": "[parameters('adminUsername')]",
+					"adminPassword": "[parameters('adminPassword')]"
+				},
+				"storageProfile": {
+					"imageReference": {
+						"publisher": "MicrosoftWindowsServer",
+						"offer": "WindowsServer",
+						"sku": "2019-Datacenter",
+						"version": "latest"
+					},
+					"osDisk": {
+						"createOption": "FromImage",
+						"managedDisk": {
+							"storageAccountType": "StandardSSD_LRS"
+						},
+						"diskSizeGB": 127,
+						"name": "primaryOsDisk"
+					}
+				},
+				"networkProfile": {
+					"networkInterfaces": [
+						{
+							"id": "[resourceId('Microsoft.Network/networkInterfaces',variables('nicName'))]"
+						}
+					]
+				},
+				"diagnosticsProfile": {
+					"bootDiagnostics": {
+						"enabled": true,
+						"storageUri": "[concat('https://', parameters('storageUri'), '.blob.core.windows.net')]"
+					}
+				}
+			}
+		},
+		{
+			"type": "Microsoft.Resources/deploymentScripts",
+			"apiVersion": "2020-10-01",
+			"name": "getSAKey",
+			"location": "[parameters('location')]",
+			"dependsOn": [
+				"[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('userIdentity'))]",
+				"[resourceId('Microsoft.Compute/virtualMachines', variables('vmName'))]",
+				"[resourceId('Microsoft.Storage/storageAccounts', parameters('storageUri'))]"
+			],
+			"identity": {
+				"type": "UserAssigned",
+				"userAssignedIdentities": {
+					"[format('{0}', resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('userIdentity')))]": {}
+				}
+			},
+			"kind": "AzurePowerShell",
+			"properties": {
+				"forceUpdateTag": "[parameters('utcValue')]",
+				"azPowerShellVersion": "6.4",
+				"timeout": "PT30M",
+				"arguments": "[format(' -rgName {0} -storageAccountName {1}', resourceGroup().name, parameters('storageUri'))]",
+				"scriptContent": "param( [string] [Parameter(Mandatory=$true)] $rgName, [string] [Parameter(Mandatory=$true)] $storageAccountName); $ErrorActionPreference = 'Stop'; Set-AzContext -Subscription $subID; Set-AzDefault -ResourceGroupName $rgName; $storageAccountKey = (Get-AzStorageAccountKey -ResourceGroupName $rgName -Name $($storageAccountName)).Value[0]; $DeploymentScriptOutputs = @{}; $DeploymentScriptOutputs['text'] = $storageAccountKey",
+				"cleanupPreference": "OnSuccess",
+				"retentionInterval": "P1D"
+			}
+		},
+		{
+			"type": "Microsoft.Compute/virtualMachines/runCommands",
+			"apiVersion": "2021-11-01",
+			"name": "[concat(variables('vmName'),'/addFileShareWithRunCommand')]",
+			"location": "[resourceGroup().location]",
+			"dependsOn": [
+				"[resourceId('Microsoft.Compute/virtualMachines', variables('vmName'))]",
+				"[resourceId('Microsoft.Storage/storageAccounts/fileServices/shares', format('{0}/default/{1}', parameters('storageUri'), parameters('fileShareName')))]",
+				"[resourceId('Microsoft.Resources/deploymentScripts', 'getSAKey')]"
+			],
+			"properties": {
+				"source": {
+					"script": "[concat('$storageAccountName = \"', parameters('storageUri') ,'\"; $fileShareName = \"', parameters('fileShareName') ,'\"; $storageAccountKey = \"', reference('getSAKey').outputs.text, '\"; cmdkey /add:\"$($storageAccountName).file.core.windows.net\" /user:\"localhost\\$($storageAccountName)\" /pass:\"$($storageAccountKey)\"; New-PSDrive -Name Z -PSProvider FileSystem -Root \"
+					\\\\$($storageAccountName).file.core.windows.net\\$($fileShareName)\" -Persist;')]"
+				},
+				"timeoutInSeconds": 60
+			}
+		}
+	],
+	"outputs": {
+		"vm-fqdn": {
+			"type": "String",
+			"value": "[reference(variables('publicIPAddressName'), '2020-07-01').dnsSettings.fqdn]"
+		}
+	}
+}
