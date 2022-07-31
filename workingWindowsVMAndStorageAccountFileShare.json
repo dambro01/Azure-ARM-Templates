@@ -254,8 +254,7 @@
 						"managedDisk": {
 							"storageAccountType": "StandardSSD_LRS"
 						},
-						"diskSizeGB": 127,
-						"name": "primaryOsDisk"
+						"diskSizeGB": 127
 					}
 				},
 				"networkProfile": {
@@ -311,10 +310,8 @@
 			],
 			"properties": {
 				"source": {
-					"script": "[concat('$storageAccountName = \"', parameters('storageUri') ,'\"; $fileShareName = \"', parameters('fileShareName') ,'\"; $storageAccountKey = \"', reference('getSAKey').outputs.text, '\"; cmdkey /add:\"$($storageAccountName).file.core.windows.net\" /user:\"localhost\\$($storageAccountName)\" /pass:\"$($storageAccountKey)\"; New-PSDrive -Name Z -PSProvider FileSystem -Root \"\\\\$($storageAccountName).file.core.windows.net\\$($fileShareName)\" -Persist;')]"
+					"script": "[concat('Start-Process -FilePath \"powershell\" -ArgumentList ''$storageAccountName = \"\"\"', parameters('storageUri') ,'\"\"\"; $fileShareName = \"\"\"', parameters('fileShareName') ,'\"\"\"; $storageAccountKey = \"\"\"', reference('getSAKey').outputs.text, '\"\"\"; cmdkey /add:\"\"\"$($storageAccountName).file.core.windows.net\"\"\" /user:\"\"\"localhost\\$($storageAccountName)\"\"\" /pass:\"\"\"$($storageAccountKey)\"\"\"; New-PSDrive -Name Z -PSProvider FileSystem -Root \"\"\"\\\\$($storageAccountName).file.core.windows.net\\$($fileShareName)\"\"\" -Persist;')]"
 				},
-				"runAsUser": "[parameters('adminUsername')]",
-				"runAsPassword": "[parameters('adminPassword')]",
 				"timeoutInSeconds": 60
 			}
 		}
