@@ -310,7 +310,7 @@
 			],
 			"properties": {
 				"source": {
-					"script": "[concat('$storageAccountName = \"', parameters('storageUri') ,'\"; $fileShareName = \"', parameters('fileShareName') ,'\"; $storageAccountKey = \"', reference('getSAKey').outputs.text, '\"; cmdkey /add:\"$storageAccountName.file.core.windows.net\" /user:\"localhost\\$storageAccountName\" /pass:\"$storageAccountKey\"; New-PSDrive -Name Z -PSProvider FileSystem -Root \"\\\\$storageAccountName.file.core.windows.net\\$fileShareName\" -Persist'';')]"
+					"script": "[concat('$storageAccountName = \"', parameters('storageUri') ,'\"; $fileShareName = \"', parameters('fileShareName') ,'\"; $storageAccountKey = \"', reference('getSAKey').outputs.text, '\"; cmdkey /add:\"$storageAccountName.file.core.windows.net\" /user:\"localhost\\$storageAccountName\" /pass:\"$storageAccountKey\"; New-PSDrive -Name Z -PSProvider FileSystem -Root \"\\\\$storageAccountName.file.core.windows.net\\$fileShareName\" -Persist;')]"
 				},
 				"timeoutInSeconds": 60
 			}
