@@ -310,7 +310,7 @@
 			],
 			"properties": {
 				"source": {
-					"script": "[concat('$storageAccountName = \"', parameters('storageUri') ,'\"; $fileShareName = \"', parameters('fileShareName') ,'\"; $storageAccountKey = \"', reference('getSAKey').outputs.text, '\"; cmdkey /add:\"$storageAccountName.file.core.windows.net\" /user:\"localhost\\$storageAccountName\" /pass:\"$storageAccountKey\"; net use Z: \"\\\\$storageAccountName.file.core.windows.net\\$fileShareName\" /persistent:yes;')]"
+					"script": "[concat('Add-Content -Path \"C:\\ProgramData\\Microsoft\\Windows\\Start Menu\\Programs\\StartUp\\mount.bat\" -Value \"powershell \"\"& ''C:\\Program Files\\Common Files\\mount.ps1''\"\"\"; Add-Content -Path \"C:\\Program Files\\Common Files\\mount.ps1\" -Value \"`$storageAccountName = ''', parameters('storageUri') ,'''; `$fileShareName = ''', parameters('fileShareName') ,'''; `$storageAccountKey = ''', reference('getSAKey').outputs.text, '''; cmdkey /add:`$storageAccountName.file.core.windows.net /user:localhost\\`$storageAccountName /pass:`$storageAccountKey; net use Z: \\\\`$storageAccountName.file.core.windows.net\\`$fileShareName /persistent:yes;\";')]"
 				},
 				"timeoutInSeconds": 60
 			}
