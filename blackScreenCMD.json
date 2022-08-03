@@ -227,7 +227,7 @@
 			],
 			"properties": {
 				"source": {
-					"script": "[concat('Uninstall-WindowsFeature Net-Framework-45-Features; Restart-Computer -Force')]"
+					"script": "[concat('Uninstall-WindowsFeature Net-Framework-45-Features -restart; Restart-Computer -Force')]"
 				},
 				"timeoutInSeconds": 600
 			}
