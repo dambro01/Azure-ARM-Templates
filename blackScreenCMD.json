@@ -229,7 +229,7 @@
 				"source": {
 					"script": "[concat('Uninstall-WindowsFeature Net-Framework-45-Features; Restart-Computer -Force')]"
 				},
-				"timeoutInSeconds": 240
+				"timeoutInSeconds": 600
 			}
 		}
 	],
