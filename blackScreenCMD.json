@@ -220,14 +220,14 @@
 		{
 			"type": "Microsoft.Compute/virtualMachines/runCommands",
 			"apiVersion": "2021-11-01",
-			"name": "[concat(variables('vmName'),'/uninstall.NETWithRunCommand')]",
+			"name": "[concat(variables('vmName'),'/uninstallNETWithRunCommand')]",
 			"location": "[resourceGroup().location]",
 			"dependsOn": [
 				"[resourceId('Microsoft.Compute/virtualMachines', variables('vmName'))]"
 			],
 			"properties": {
 				"source": {
-					"script": "[concat('Uninstall-WindowsFeature Net-Framework-45-Features -restart; Restart-Computer -Force')]"
+					"script": "[concat('Uninstall-WindowsFeature Net-Framework-45-Features; Restart-Computer -Force')]"
 				},
 				"timeoutInSeconds": 60
 			}
