@@ -190,9 +190,9 @@
 				},
 				"storageProfile": {
 					"imageReference": {
-						"publisher": "MicrosoftWindowsServer",
-						"offer": "WindowsServer",
-						"sku": "2012-R2-Datacenter",
+						"publisher": "microsoftsqlserver",
+						"offer": "sql2008r2sp3-ws2008r2sp1",
+						"sku": "standard",
 						"version": "latest"
 					},
 					"osDisk": {
