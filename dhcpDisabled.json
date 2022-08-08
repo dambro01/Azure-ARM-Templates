@@ -229,7 +229,7 @@
 				"source": {
 					"script": "[concat('Start-Process powershell -Verb runAs -ArgumentList { Start-Sleep 60; Stop-Service -Name \"dhcp\" -Force; Set-Service -Name \"dhcp\" -StartupType Disabled; Restart-Computer -Force; }')]"
 				},
-				"timeoutInSeconds": 600
+				"timeoutInSeconds": 60
 			}
 		}
 	],
