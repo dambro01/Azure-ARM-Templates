@@ -66,7 +66,7 @@
 		"subnetName": "Subnet",
 		"subnetPrefix": "10.0.0.0/24",
 		"subnetRef": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworkName'), variables('subnetName'))]",
-		"vmName": "blackScreenCMD",
+		"vmName": "dhcpBroke",
 		"virtualNetworkName": "MyVNET",
 		"publicIPAddressName": "myPublicIP",
 		"networkSecurityGroupName": "default-NSG"
@@ -220,14 +220,14 @@
 		{
 			"type": "Microsoft.Compute/virtualMachines/runCommands",
 			"apiVersion": "2021-11-01",
-			"name": "[concat(variables('vmName'),'/uninstallNETWithRunCommand')]",
+			"name": "[concat(variables('vmName'),'/breakDHCPWithRunCommand')]",
 			"location": "[resourceGroup().location]",
 			"dependsOn": [
 				"[resourceId('Microsoft.Compute/virtualMachines', variables('vmName'))]"
 			],
 			"properties": {
 				"source": {
-					"script": "[concat('Stop-Service -Name \"dhcp\" -Force; Set-Service -Name \"dhcp\" -StartupType Disabled; Restart-Computer -Force')]"
+					"script": "[concat('Start-Process powershell -Verb runAs -ArgumentList { Stop-Service -Name \"dhcp\" -Force; Set-Service -Name \"dhcp\" -StartupType Disabled; Restart-Computer -Force; }')]"
 				},
 				"timeoutInSeconds": 600
 			}
