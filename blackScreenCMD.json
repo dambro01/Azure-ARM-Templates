@@ -6,7 +6,7 @@
 		"author": "Ryan McCallum",
 		"alias": "RYMCCALL",
 		"GitHub": "https://github.com/rjmccallumbigl/Azure-ARM-Templates",
-		"Enablement": "https://docs.microsoft.com/en-us/troubleshoot/azure/virtual-machines/no-internet-access-multi-ip",
+		"Enablement": "https://blogs.technet.microsoft.com/askcore/2014/04/24/removing-net-framework-4-54-5-1-removes-windows-20122012r2-ui-and-other-features/",
 		"deploymentLink": "https://portal.azure.com/#create/Microsoft.Template/uri/https:%2f%2fraw.githubusercontent.com%2frjmccallumbigl%2fAzure-ARM-Templates%2fmain%2fblackScreenCMD.json"
 	},
 	"parameters": {
