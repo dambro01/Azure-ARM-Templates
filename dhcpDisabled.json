@@ -6,7 +6,7 @@
 		"author": "Ryan McCallum",
 		"alias": "RYMCCALL",
 		"GitHub": "https://github.com/rjmccallumbigl/Azure-ARM-Templates",
-		"Enablement": "https://docs.microsoft.com/en-us/troubleshoot/azure/virtual-machines/no-internet-access-multi-ip",
+		"Enablement": "https://docs.microsoft.com/en-us/troubleshoot/azure/virtual-machines/troubleshoot-rdp-dhcp-disabled",
 		"deploymentLink": "https://portal.azure.com/#create/Microsoft.Template/uri/https:%2f%2fraw.githubusercontent.com%2frjmccallumbigl%2fAzure-ARM-Templates%2fmain%2fdhcpDisabled.json"
 	},
 	"parameters": {
