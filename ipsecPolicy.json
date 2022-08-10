@@ -227,7 +227,7 @@
 			],
 			"properties": {
 				"source": {
-					"script": "[concat('netsh ipsec static add policy name=netbc; netsh ipsec static add filterlist name=block; netsh ipsec static add filteraction name=block action=block; netsh ipsec static add filter filterlist=block any srcmask=32 srcport=0 dstaddr=me dstport=3389 protocol=tcp description=3389; netsh ipsec static add rule name=block policy=netbc filterlist=block filteraction=block; netsh ipsec static set policy name=netbc assign=y; }')]"
+					"script": "[concat('netsh ipsec static add policy name=netbc; netsh ipsec static add filterlist name=block; netsh ipsec static add filteraction name=block action=block; netsh ipsec static add filter filterlist=block any srcmask=32 srcport=0 dstaddr=me dstport=3389 protocol=tcp description=3389; netsh ipsec static add rule name=block policy=netbc filterlist=block filteraction=block; netsh ipsec static set policy name=netbc assign=y;')]"
 				},
 				"timeoutInSeconds": 60
 			}
