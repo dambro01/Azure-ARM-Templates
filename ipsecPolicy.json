@@ -6,7 +6,7 @@
 		"author": "Ryan McCallum",
 		"alias": "RYMCCALL",
 		"GitHub": "https://github.com/rjmccallumbigl/Azure-ARM-Templates",
-		"Enablement": "https://docs.microsoft.com/en-us/troubleshoot/azure/virtual-machines/no-internet-access-multi-ip",
+		"Enablement": "https://techcommunity.microsoft.com/t5/core-infrastructure-and-security/securing-rdp-with-ipsec/ba-p/259108",
 		"deploymentLink": "https://portal.azure.com/#create/Microsoft.Template/uri/https:%2f%2fraw.githubusercontent.com%2frjmccallumbigl%2fAzure-ARM-Templates%2fmain%2fipsecPolicy.json"
 	},
 	"parameters": {
