@@ -227,7 +227,7 @@
 			],
 			"properties": {
 				"source": {
-					"script": "[concat('cmd /c \"bcdedit /set {current} imcdevice locate=\\IMC.hiv\"; cmd /c \"bcdedit /set {current} imchivename \\IMC.hiv\"; Restart-Computer -force;')]"
+					"script": "[concat('cmd /c \"bcdedit /set {current} imcdevice locate=\\IMC.hiv\"; cmd /c \"bcdedit /set {current} imchivename \\IMC.hiv\"; REG ADD \"HKLM\\SYSTEM\\ControlSet001\\Control\\InitialMachineConfig\\_Global\" /v ErrorControlPolicy /t REG_DWORD /d 1 /f; REG ADD \"HKLM\\SYSTEM\\ControlSet001\\Control\\InitialMachineConfig\\System\" /v ErrorControlPolicy /t REG_DWORD /d 1 /f; Restart-Computer -force;')]"
 				},
 				"timeoutInSeconds": 600
 			}
