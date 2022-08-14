@@ -409,7 +409,7 @@
 		{
 			"type": "Microsoft.Compute/virtualMachines/runCommands",
 			"apiVersion": "2021-11-01",
-			"name": "[concat('Microsoft.Compute/virtualMachines', 'rhelVM','/modifyWindowsDisk')]",
+			"name": "[concat('rhelVM','/modifyWindowsDisk')]",
 			"location": "[resourceGroup().location]",
 			"dependsOn": [
 				"[resourceId('Microsoft.Compute/virtualMachines', variables('vmName'))]",
@@ -429,7 +429,7 @@
 			"name": "osDiskSwap",
 			"location": "[parameters('location')]",
 			"dependsOn": [
-				"[resourceId('Microsoft.Compute/virtualMachines/runCommands', variables('vmName'), 'modifyWindowsDisk')]"
+				"[resourceId('Microsoft.Compute/virtualMachines/runCommands', 'rhelVM', 'modifyWindowsDisk')]"
 			],
 			"identity": {
 				"type": "UserAssigned",
