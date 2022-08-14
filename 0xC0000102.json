@@ -409,7 +409,7 @@
 		{
 			"type": "Microsoft.Compute/virtualMachines/runCommands",
 			"apiVersion": "2021-11-01",
-			"name": "[concat(variables('vmName'),'/modifyWindowsDisk')]",
+			"name": "[concat('Microsoft.Compute/virtualMachines', 'rhelVM','/modifyWindowsDisk')]",
 			"location": "[resourceGroup().location]",
 			"dependsOn": [
 				"[resourceId('Microsoft.Compute/virtualMachines', variables('vmName'))]",
