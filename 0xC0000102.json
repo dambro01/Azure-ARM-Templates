@@ -364,7 +364,7 @@
 			"name": "snapshotDisk",
 			"location": "[parameters('location')]",
 			"sku": {
-				"name": "Standard_LRS"
+				"name": "StandardSSD_LRS"
 			},
 			"dependsOn": [
 				"[resourceId('Microsoft.Compute/snapshots', 'snapshot')]"
