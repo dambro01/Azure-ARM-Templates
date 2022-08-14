@@ -400,7 +400,7 @@
 				"forceUpdateTag": "[parameters('utcValue')]",
 				"azPowerShellVersion": "3.0",
 				"timeout": "PT30M",
-				"arguments": "[format(' -rgName {0} -vmName {1} -subID {2} -dataDiskName {3}', resourceGroup().name, variables('vmName'), subscription().subscriptionId, 'snapshotDisk')]",
+				"arguments": "[format(' -rgName {0} -vmName {1} -subID {2} -dataDiskName {3}', resourceGroup().name, 'rhelVM', subscription().subscriptionId, 'snapshotDisk')]",
 				"scriptContent": "param( [string] [Parameter(Mandatory=$true)] $rgName, [string] [Parameter(Mandatory=$true)] $vmName, [string] [Parameter(Mandatory=$true)] $subID, [string] [Parameter(Mandatory=$true)] $dataDiskName); $ErrorActionPreference = 'Stop'; Set-AzContext -Subscription $subID; Set-AzDefault -ResourceGroupName $rgName; $disk = Get-AzDisk -ResourceGroupName $rgName -DiskName $dataDiskName; $vm = Get-AzVM -Name $vmName -ResourceGroupName $rgName; $vm = Add-AzVMDataDisk -CreateOption Attach -Lun 0 -VM $vm -ManagedDiskId $disk.Id; Update-AzVM -VM $vm -ResourceGroupName $rgName;",
 				"cleanupPreference": "OnSuccess",
 				"retentionInterval": "P1D"
