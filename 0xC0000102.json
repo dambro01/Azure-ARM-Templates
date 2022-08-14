@@ -1,0 +1,458 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"metadata": {
+		"description": "Your Windows VM is failing to start due to a driver error.",
+		"author": "Ryan McCallum",
+		"alias": "RYMCCALL",
+		"GitHub": "https://github.com/rjmccallumbigl/Azure-ARM-Templates",
+		"Enablement": "https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/template-tutorial-deployment-script",
+		"deploymentLink": "https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2f%2fraw.githubusercontent.com%2frjmccallumbigl%2fAzure-ARM-Templates%2fmain%2f0xC0000102.json"
+	},
+	"parameters": {
+		"adminUsername": {
+			"type": "String",
+			"maxLength": 20,
+			"metadata": {
+				"description": "Username for the Virtual Machine."
+			}
+		},
+		"adminPassword": {
+			"type": "SecureString",
+			"minLength": 12,
+			"metadata": {
+				"description": "Password for the Virtual Machine."
+			}
+		},
+		"location": {
+			"defaultValue": "[resourceGroup().location]",
+			"type": "String",
+			"metadata": {
+				"description": "Location for all resources."
+			}
+		},
+		"vmSize": {
+			"defaultValue": "Standard_D2_v3",
+			"type": "String",
+			"metadata": {
+				"description": "Default VM Size"
+			}
+		},
+		"dnsNameForPublicIP": {
+			"defaultValue": "[tolower(concat('dns', uniquestring(resourceGroup().id)))]",
+			"type": "String",
+			"metadata": {
+				"description": "DNS name for the public IP"
+			}
+		},
+		"storageUri": {
+			"defaultValue": "[format('store{0}', uniqueString(resourceGroup().id))]",
+			"type": "string",
+			"metadata": {
+				"description": "Name of storage account For Boot Diagnostics"
+			}
+		},
+		"storageAccountType": {
+			"type": "string",
+			"defaultValue": "Standard_LRS",
+			"metadata": {
+				"description": "Storage Account type"
+			}
+		},
+		"utcValue": {
+			"defaultValue": "[utcNow()]",
+			"type": "string",
+			"metadata": {
+				"description": "UTC"
+			}
+		}
+	},
+	"variables": {
+		"nicName": "myVMNic",
+		"addressPrefix": "10.0.0.0/16",
+		"subnetName": "Subnet",
+		"subnetPrefix": "10.0.0.0/24",
+		"subnetRef": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworkName'), variables('subnetName'))]",
+		"vmName": "driverVM",
+		"virtualNetworkName": "MyVNET",
+		"publicIPAddressName": "myPublicIP",
+		"networkSecurityGroupName": "default-NSG",
+		"userIdentity": "[tolower(concat('ui-', uniquestring(resourceGroup().id)))]",
+		"bootstrapRoleAssignmentId": "[guid(concat(resourceGroup().id, 'contributor'))]",
+		"contributorRoleDefinitionId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', 'b24988ac-6180-42a0-ab88-20f7382dd24c')]"
+	},
+	"resources": [
+		{
+			"type": "Microsoft.ManagedIdentity/userAssignedIdentities",
+			"name": "[variables('userIdentity')]",
+			"apiVersion": "2018-11-30",
+			"location": "[parameters('location')]"
+		},
+		{
+			"type": "Microsoft.Authorization/roleAssignments",
+			"apiVersion": "2018-09-01-preview",
+			"name": "[variables('bootstrapRoleAssignmentId')]",
+			"dependsOn": [
+				"[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('userIdentity'))]"
+			],
+			"properties": {
+				"roleDefinitionId": "[variables('contributorRoleDefinitionId')]",
+				"principalId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('userIdentity')), '2018-11-30').principalId]",
+				"principalType": "ServicePrincipal"
+			}
+		},
+		{
+			"type": "Microsoft.Network/publicIPAddresses",
+			"apiVersion": "2020-08-01",
+			"name": "[variables('publicIPAddressName')]",
+			"location": "[parameters('location')]",
+			"properties": {
+				"publicIPAllocationMethod": "Dynamic",
+				"dnsSettings": {
+					"domainNameLabel": "[parameters('dnsNameForPublicIP')]"
+				}
+			}
+		},
+		{
+			"type": "Microsoft.Network/networkSecurityGroups",
+			"apiVersion": "2020-08-01",
+			"name": "[variables('networkSecurityGroupName')]",
+			"location": "[parameters('location')]",
+			"properties": {
+				"securityRules": [
+					{
+						"name": "default-allow-3389",
+						"properties": {
+							"priority": 1000,
+							"access": "Allow",
+							"direction": "Inbound",
+							"destinationPortRange": "3389",
+							"protocol": "Tcp",
+							"sourceAddressPrefix": "*",
+							"sourcePortRange": "*",
+							"destinationAddressPrefix": "*"
+						}
+					}
+				]
+			}
+		},
+		{
+			"type": "Microsoft.Network/virtualNetworks",
+			"apiVersion": "2020-08-01",
+			"name": "[variables('virtualNetworkName')]",
+			"location": "[parameters('location')]",
+			"dependsOn": [
+				"[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSecurityGroupName'))]"
+			],
+			"properties": {
+				"addressSpace": {
+					"addressPrefixes": [
+						"[variables('addressPrefix')]"
+					]
+				},
+				"subnets": [
+					{
+						"name": "[variables('subnetName')]",
+						"properties": {
+							"addressPrefix": "[variables('subnetPrefix')]",
+							"networkSecurityGroup": {
+								"id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSecurityGroupName'))]"
+							}
+						}
+					}
+				]
+			}
+		},
+		{
+			"type": "Microsoft.Network/networkInterfaces",
+			"apiVersion": "2020-08-01",
+			"name": "[variables('nicName')]",
+			"location": "[parameters('location')]",
+			"dependsOn": [
+				"[variables('publicIPAddressName')]",
+				"[variables('virtualNetworkName')]"
+			],
+			"properties": {
+				"ipConfigurations": [
+					{
+						"name": "ipconfig1",
+						"properties": {
+							"privateIPAllocationMethod": "Dynamic",
+							"publicIPAddress": {
+								"id": "[resourceId('Microsoft.Network/publicIPAddresses',variables('publicIPAddressName'))]"
+							},
+							"subnet": {
+								"id": "[variables('subnetRef')]"
+							}
+						}
+					}
+				]
+			}
+		},
+		{
+			"type": "Microsoft.Network/networkInterfaces",
+			"apiVersion": "2020-08-01",
+			"name": "linuxNIC",
+			"location": "[parameters('location')]",
+			"dependsOn": [
+				"[variables('virtualNetworkName')]"
+			],
+			"properties": {
+				"ipConfigurations": [
+					{
+						"name": "ipconfig1",
+						"properties": {
+							"privateIPAllocationMethod": "Dynamic",
+							"subnet": {
+								"id": "[variables('subnetRef')]"
+							}
+						}
+					}
+				]
+			}
+		},
+		{
+			"type": "Microsoft.Storage/storageAccounts",
+			"apiVersion": "2021-06-01",
+			"name": "[parameters('storageUri')]",
+			"location": "[parameters('location')]",
+			"sku": {
+				"name": "[parameters('storageAccountType')]"
+			},
+			"kind": "StorageV2",
+			"properties": {}
+		},
+		{
+			"type": "Microsoft.Compute/virtualMachines",
+			"apiVersion": "2020-12-01",
+			"name": "[variables('vmName')]",
+			"location": "[parameters('location')]",
+			"identity": {
+				"type": "UserAssigned",
+				"userAssignedIdentities": {
+					"[resourceID('Microsoft.ManagedIdentity/userAssignedIdentities/',variables('userIdentity'))]": {}
+				}
+			},
+			"dependsOn": [
+				"[variables('nicName')]",
+				"[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('userIdentity'))]"
+			],
+			"properties": {
+				"hardwareProfile": {
+					"vmSize": "[parameters('vmSize')]"
+				},
+				"osProfile": {
+					"computerName": "[variables('vmName')]",
+					"adminUsername": "[parameters('adminUsername')]",
+					"adminPassword": "[parameters('adminPassword')]"
+				},
+				"storageProfile": {
+					"imageReference": {
+						"publisher": "MicrosoftWindowsServer",
+						"offer": "WindowsServer",
+						"sku": "2019-Datacenter",
+						"version": "latest"
+					},
+					"osDisk": {
+						"createOption": "FromImage",
+						"managedDisk": {
+							"storageAccountType": "StandardSSD_LRS"
+						},
+						"diskSizeGB": 127,
+						"name": "primaryOsDisk"
+					}
+				},
+				"networkProfile": {
+					"networkInterfaces": [
+						{
+							"id": "[resourceId('Microsoft.Network/networkInterfaces',variables('nicName'))]"
+						}
+					]
+				},
+				"diagnosticsProfile": {
+					"bootDiagnostics": {
+						"enabled": true,
+						"storageUri": "[concat('https://', parameters('storageUri'), '.blob.core.windows.net')]"
+					}
+				}
+			},
+			"resources": [
+				// {
+				// 	"type": "extensions",
+				// 	"apiVersion": "2020-12-01",
+				// 	"name": "CustomScriptExtension",
+				// 	"location": "[parameters('location')]",
+				// 	"dependsOn": [
+				// 		"[variables('vmName')]"
+				// 	],
+				// 	"properties": {
+				// 		"publisher": "Microsoft.Compute",
+				// 		"type": "CustomScriptExtension",
+				// 		"typeHandlerVersion": "1.8",
+				// 		"autoUpgradeMinorVersion": true,
+				// 		"settings": {
+				// 			"commandToExecute": "powershell Set-Service -Name 'SACDRV' -StartupType Disabled; powershell Restart-Computer -Force"
+				// 		}
+				// 	}
+				// }
+			]
+		},
+		{
+			"type": "Microsoft.Compute/virtualMachines",
+			"apiVersion": "2020-12-01",
+			"name": "rhelVM",
+			"location": "[parameters('location')]",
+			"dependsOn": [
+				"[resourceId('Microsoft.Network/networkInterfaces', 'linuxNIC')]"
+			],
+			"properties": {
+				"hardwareProfile": {
+					"vmSize": "[parameters('vmSize')]"
+				},
+				"osProfile": {
+					"computerName": "[variables('vmName')]",
+					"adminUsername": "[parameters('adminUsername')]",
+					"adminPassword": "[parameters('adminPassword')]"
+				},
+				"storageProfile": {
+					"imageReference": {
+						"publisher": "RedHat",
+						"offer": "rhel-raw",
+						"sku": "8-raw",
+						"version": "latest"
+					},
+					"osDisk": {
+						"createOption": "FromImage",
+						"managedDisk": {
+							"storageAccountType": "StandardSSD_LRS"
+						}
+					}
+				},
+				"networkProfile": {
+					"networkInterfaces": [
+						{
+							"id": "[resourceId('Microsoft.Network/networkInterfaces', 'linuxNIC')]"
+						}
+					]
+				},
+				"diagnosticsProfile": {
+					"bootDiagnostics": {
+						"enabled": true,
+						"storageUri": "[concat('https://', parameters('storageUri'), '.blob.core.windows.net')]"
+					}
+				}
+			}
+		},
+		{
+			"type": "Microsoft.Compute/snapshots",
+			"apiVersion": "2019-03-01",
+			"name": "snapshot",
+			"location": "[parameters('location')]",
+			"dependsOn": [
+				"[resourceId('Microsoft.Compute/virtualMachines', variables('vmName'))]"
+			],
+			"properties": {
+				"creationData": {
+					"createOption": "Copy",
+					"sourceResourceId": "[resourceId('Microsoft.Compute/disks','primaryOsDisk')]"
+				}
+			}
+		},
+		{
+			"type": "Microsoft.Compute/disks",
+			"apiVersion": "2018-06-01",
+			"name": "snapshotDisk",
+			"location": "[parameters('location')]",
+			"sku": {
+				"name": "Standard_LRS"
+			},
+			"dependsOn": [
+				"[resourceId('Microsoft.Compute/snapshots', 'snapshot')]"
+			],
+			"properties": {
+				"creationData": {
+					"createOption": "Copy",
+					"sourceResourceId": "[resourceId('Microsoft.Compute/snapshots','snapshot')]"
+				},
+				"diskSizeGB": 127
+			}
+		},
+		{
+			"type": "Microsoft.Resources/deploymentScripts",
+			"apiVersion": "2020-10-01",
+			"name": "attachToLinuxVM",
+			"location": "[parameters('location')]",
+			"dependsOn": [
+				"[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('userIdentity'))]",
+				"[resourceId('Microsoft.Compute/virtualMachines', variables('vmName'))]",
+				"[resourceId('Microsoft.Compute/virtualMachines', 'rhelVM')]",
+				"[resourceId('Microsoft.Compute/snapshots', 'snapshot')]",
+				"[resourceId('Microsoft.Compute/disks', 'snapshotDisk')]"
+			],
+			"identity": {
+				"type": "UserAssigned",
+				"userAssignedIdentities": {
+					"[format('{0}', resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('userIdentity')))]": {}
+				}
+			},
+			"kind": "AzurePowerShell",
+			"properties": {
+				"forceUpdateTag": "[parameters('utcValue')]",
+				"azPowerShellVersion": "3.0",
+				"timeout": "PT30M",
+				"arguments": "[format(' -rgName {0} -vmName {1} -subID {2} -dataDiskName {3}', resourceGroup().name, variables('vmName'), subscription().subscriptionId, 'snapshotDisk')]",
+				"scriptContent": "param( [string] [Parameter(Mandatory=$true)] $rgName, [string] [Parameter(Mandatory=$true)] $vmName, [string] [Parameter(Mandatory=$true)] $subID, [string] [Parameter(Mandatory=$true)] $dataDiskName); $ErrorActionPreference = 'Stop'; Set-AzContext -Subscription $subID; Set-AzDefault -ResourceGroupName $rgName; $disk = Get-AzDisk -ResourceGroupName $rgName -DiskName $dataDiskName; $vm = Get-AzVM -Name $vmName -ResourceGroupName $rgName; $vm = Add-AzVMDataDisk -CreateOption Attach -Lun 0 -VM $vm -ManagedDiskId $disk.Id; Update-AzVM -VM $vm -ResourceGroupName $rgName;",
+				"cleanupPreference": "OnSuccess",
+				"retentionInterval": "P1D"
+			}
+		},
+		{
+			"type": "Microsoft.Compute/virtualMachines/runCommands",
+			"apiVersion": "2021-11-01",
+			"name": "[concat(variables('vmName'),'/modifyWindowsDisk')]",
+			"location": "[resourceGroup().location]",
+			"dependsOn": [
+				"[resourceId('Microsoft.Compute/virtualMachines', variables('vmName'))]",
+				"[resourceId('Microsoft.Resources/deploymentScripts', 'attachToLinuxVM')]",
+				"[resourceId('Microsoft.Compute/virtualMachines', 'rhelVM')]"
+			],
+			"properties": {
+				"source": {
+					"scriptUri": "https://raw.githubusercontent.com/rjmccallumbigl/PowerShell-break-Azure-VMs/main/attachWindowsDisk.sh"
+				},
+				"timeoutInSeconds": 120
+			}
+		},
+		{
+			"type": "Microsoft.Resources/deploymentScripts",
+			"apiVersion": "2020-10-01",
+			"name": "osDiskSwap",
+			"location": "[parameters('location')]",
+			"dependsOn": [
+				"[resourceId('Microsoft.Compute/virtualMachines/runCommands', variables('vmName'), 'modifyWindowsDisk')]"
+			],
+			"identity": {
+				"type": "UserAssigned",
+				"userAssignedIdentities": {
+					"[format('{0}', resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('userIdentity')))]": {}
+				}
+			},
+			"kind": "AzurePowerShell",
+			"properties": {
+				"forceUpdateTag": "[parameters('utcValue')]",
+				"azPowerShellVersion": "3.0",
+				"timeout": "PT30M",
+				"arguments": "[format(' -rgName {0} -vmName {1} -subID {2} -dataDiskName {3} -linuxVMName {4}', resourceGroup().name, variables('vmName'), subscription().subscriptionId, 'snapshotDisk', 'rhelVM')]",
+				"scriptContent": "param( [string] [Parameter(Mandatory=$true)] $rgName, [string] [Parameter(Mandatory=$true)] $vmName, [string] [Parameter(Mandatory=$true)] $subID, [string] [Parameter(Mandatory=$true)] $dataDiskName, [string] [Parameter(Mandatory=$true)] $linuxVMName); $ErrorActionPreference = 'Stop'; Set-AzContext -Subscription $subID; Set-AzDefault -ResourceGroupName $rgName; $vm = Get-AzVM -ResourceGroupName $rgName -Name $vmName; Stop-AzVM -ResourceGroupName $rgName -Name $vm.Name -Force; $linux = Get-AzVM -ResourceGroupName $rgName -Name $linuxVMName; Remove-AzVMDataDisk -VM $linuxVMName -Name $dataDiskName; Update-AzVM -VM $linuxVMName -ResourceGroupName $rgName; $disk = Get-AzDisk -ResourceGroupName $rgName -DiskName $dataDiskName; Set-AzVMOSDisk -VM $vm -ManagedDiskId $disk.Id -Name $disk.Name; Update-AzVM -ResourceGroupName $rgName -VM $vm; Start-AzVM -Name $vm.Name -ResourceGroupName $rgName;",
+				"cleanupPreference": "OnSuccess",
+				"retentionInterval": "P1D"
+			}
+		}
+	],
+	"outputs": {
+		"vm-fqdn": {
+			"type": "String",
+			"value": "[reference(variables('publicIPAddressName'), '2020-07-01').dnsSettings.fqdn]"
+		}
+	}
+}
