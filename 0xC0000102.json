@@ -424,7 +424,7 @@
 			}
 		},
 		{
-			"name": "runLinuxScriptinCSE",
+			"name": "rhelVM/runLinuxScriptinCSE",
 			"type": "Microsoft.Compute/virtualMachines/extensions",
 			"location": "[resourceGroup().location]",
 			"apiVersion": "2019-03-01",
@@ -436,8 +436,6 @@
 				"type": "CustomScript",
 				"typeHandlerVersion": "2.1",
 				"autoUpgradeMinorVersion": true,
-				"settings": {
-				},
 				"protectedSettings": {
 					"commandToExecute": "sh attachWindowsDisk.sh",
 					"fileUris": [
@@ -453,7 +451,7 @@
 			"location": "[parameters('location')]",
 			"dependsOn": [
 				"[resourceId('Microsoft.Compute/virtualMachines/runCommands', 'rhelVM', 'modifyWindowsDisk')]",
-				"[resourceId('extensions', 'runLinuxScriptinCSE')]"
+				"[resourceId('Microsoft.Compute/virtualMachines/extensions', 'rhelVM', 'runLinuxScriptinCSE')]"
 			],
 			"identity": {
 				"type": "UserAssigned",
