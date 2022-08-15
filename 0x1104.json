@@ -191,8 +191,8 @@
 				"storageProfile": {
 					"imageReference": {
 						"publisher": "microsoftsqlserver",
-						"offer": "WindowsServer",
-						"sku": "sql2019-ws2022",
+						"offer": "sql2016sp3-ws2019",
+						"sku": "enterprise",
 						"version": "latest"
 					},
 					"osDisk": {
