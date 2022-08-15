@@ -425,7 +425,7 @@
 		},
 		{
 			"name": "runLinuxScriptinCSE",
-			"type": "extensions",
+			"type": "Microsoft.Compute/virtualMachines/extensions",
 			"location": "[resourceGroup().location]",
 			"apiVersion": "2019-03-01",
 			"dependsOn": [
