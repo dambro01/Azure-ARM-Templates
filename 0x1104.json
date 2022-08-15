@@ -6,7 +6,7 @@
 		"author": "Ryan McCallum",
 		"alias": "RYMCCALL",
 		"GitHub": "https://github.com/rjmccallumbigl/Azure-ARM-Templates",
-		"Enablement": "https://docs.microsoft.com/en-us/previous-versions/windows/it-pro/windows-8.1-and-8/hh824815(v=win.10)?redirectedfrom=MSDN",
+		"Enablement": "https://support.huaweicloud.com/intl/en-us/ecs_faq/ecs_faq_0534.html",
 		"deploymentLink": "https://portal.azure.com/#create/Microsoft.Template/uri/https:%2f%2fraw.githubusercontent.com%2frjmccallumbigl%2fAzure-ARM-Templates%2fmain%2f0x1104.json"
 	},
 	"parameters": {
