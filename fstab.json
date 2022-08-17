@@ -2,12 +2,12 @@
 	"$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
 	"contentVersion": "1.0.0.0",
 	"metadata": {
-		"description": "Prepares a Red Hat Linux VM.",
+		"description": "Your VM is booting in Emergency Mode.",
 		"author": "Ryan McCallum",
 		"alias": "RYMCCALL",
 		"GitHub": "https://github.com/rjmccallumbigl/Azure-ARM-Templates",
-		"Enablement": "https://docs.microsoft.com/en-us/azure/virtual-machines/linux/quick-create-template",
-		"deploymentLink": "https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2f%2fraw.githubusercontent.com%2frjmccallumbigl%2fAzure-ARM-Templates%2fmain%2fworkingLinuxVM.json"
+		"Enablement": "https://docs.microsoft.com/en-us/troubleshoot/azure/virtual-machines/linux-virtual-machine-cannot-start-fstab-errors",
+		"deploymentLink": "https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2f%2fraw.githubusercontent.com%2frjmccallumbigl%2fAzure-ARM-Templates%2fmain%2ffstab.json"
 	},
 	"parameters": {
 		"adminUsername": {
