@@ -227,7 +227,7 @@
 			],
 			"properties": {
 				"source": {
-					"script": "echo \"/dev/sdc2  /mySecondPartition   auto   defaults   0   2\" >> /etc/fstab; sudo shutdown -r now"
+					"scriptUri": "https://raw.githubusercontent.com/rjmccallumbigl/PowerShell-break-Azure-VMs/main/updateFstab.sh"
 				},
 				"timeoutInSeconds": 120
 			}
