@@ -227,7 +227,7 @@
 			],
 			"properties": {
 				"source": {
-					"script": "sudo rm -f /boot/grub2/grub.cfg; sudo shutdown -r"
+					"script": "sudo rm -f /boot/efi/EFI/redhat/grub.cfg; sudo shutdown -r"
 				},
 				"timeoutInSeconds": 120
 			}
