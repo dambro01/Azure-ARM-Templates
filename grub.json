@@ -227,7 +227,7 @@
 			],
 			"properties": {
 				"source": {
-					"script": "sudo rm -f /boot/efi/EFI/redhat/grub.cfg; sudo shutdown -r"
+					"scriptUri": "https://raw.githubusercontent.com/rjmccallumbigl/PowerShell-break-Azure-VMs/main/updateGrub.sh"
 				},
 				"timeoutInSeconds": 120
 			}
