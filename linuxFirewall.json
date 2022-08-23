@@ -6,7 +6,7 @@
 		"author": "Ryan McCallum",
 		"alias": "RYMCCALL",
 		"GitHub": "https://github.com/rjmccallumbigl/Azure-ARM-Templates",
-		"Enablement": "https://www.simplified.guide/ssh/test-config",
+		"Enablement": "https://www.redhat.com/sysadmin/secure-linux-network-firewall-cmd",
 		"deploymentLink": "https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2f%2fraw.githubusercontent.com%2frjmccallumbigl%2fAzure-ARM-Templates%2fmain%2flinuxFirewall.json"
 	},
 	"parameters": {
