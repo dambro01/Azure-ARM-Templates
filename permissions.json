@@ -227,18 +227,24 @@
 			}
 		},
 		{
-			"type": "Microsoft.Compute/virtualMachines/runCommands",
-			"apiVersion": "2021-11-01",
-			"name": "[concat(variables('vmName'),'/injectRunCommand')]",
+			"name": "[concat(variables('vmName'), '/runLinuxScriptinCSE')]",
+			"type": "Microsoft.Compute/virtualMachines/extensions",
 			"location": "[resourceGroup().location]",
+			"apiVersion": "2019-03-01",
 			"dependsOn": [
 				"[resourceId('Microsoft.Compute/virtualMachines', variables('vmName'))]"
 			],
 			"properties": {
-				"source": {
-					"script": "https://raw.githubusercontent.com/rjmccallumbigl/PowerShell-break-Azure-VMs/main/wildPermissions.sh"
-				},
-				"timeoutInSeconds": 120
+				"publisher": "Microsoft.Azure.Extensions",
+				"type": "CustomScript",
+				"typeHandlerVersion": "2.1",
+				"autoUpgradeMinorVersion": true,
+				"protectedSettings": {
+					"commandToExecute": "sudo sh wildPermissions.sh",
+					"fileUris": [
+						"https://raw.githubusercontent.com/rjmccallumbigl/PowerShell-break-Azure-VMs/main/wildPermissions.sh"
+					]
+				}
 			}
 		}
 	],
