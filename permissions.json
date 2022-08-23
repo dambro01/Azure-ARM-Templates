@@ -2,12 +2,12 @@
 	"$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
 	"contentVersion": "1.0.0.0",
 	"metadata": {
-		"description": "You receive the following error when you attempt RDP connectivity: 'This computer can't connect to the remote computer. Try connecting again, if the problem continues, contact the owner of the remote computer or your network administrator'.",
+		"description": "Prepares a Red Hat Linux VM.",
 		"author": "Ryan McCallum",
 		"alias": "RYMCCALL",
 		"GitHub": "https://github.com/rjmccallumbigl/Azure-ARM-Templates",
-		"Enablement": "https://docs.microsoft.com/en-us/troubleshoot/azure/virtual-machines/cannot-connect-rdp-azure-vm",
-		"deploymentLink": "https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2f%2fraw.githubusercontent.com%2frjmccallumbigl%2fAzure-ARM-Templates%2fmain%2fcantConnect.json"
+		"Enablement": "https://docs.microsoft.com/en-us/azure/virtual-machines/linux/quick-create-template",
+		"deploymentLink": "https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2f%2fraw.githubusercontent.com%2frjmccallumbigl%2fAzure-ARM-Templates%2fmain%2fworkingLinuxVM.json"
 	},
 	"parameters": {
 		"adminUsername": {
@@ -17,11 +17,10 @@
 				"description": "Username for the Virtual Machine."
 			}
 		},
-		"adminPassword": {
+		"adminPublicKey": {
 			"type": "SecureString",
-			"minLength": 12,
 			"metadata": {
-				"description": "Password for the Virtual Machine."
+				"description": "Specifies the SSH rsa public key file as a string. Use \"ssh-keygen -t rsa -b 2048\" to generate your SSH key pairs."
 			}
 		},
 		"location": {
@@ -32,7 +31,7 @@
 			}
 		},
 		"vmSize": {
-			"defaultValue": "Standard_D2s_v3",
+			"defaultValue": "Standard_B2ms",
 			"type": "String",
 			"metadata": {
 				"description": "Default VM Size"
@@ -66,7 +65,7 @@
 		"subnetName": "Subnet",
 		"subnetPrefix": "10.0.0.0/24",
 		"subnetRef": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworkName'), variables('subnetName'))]",
-		"vmName": "cantConnect",
+		"vmName": "permVM",
 		"virtualNetworkName": "MyVNET",
 		"publicIPAddressName": "myPublicIP",
 		"networkSecurityGroupName": "default-NSG"
@@ -92,12 +91,12 @@
 			"properties": {
 				"securityRules": [
 					{
-						"name": "default-allow-3389",
+						"name": "default-allow-22",
 						"properties": {
 							"priority": 1000,
 							"access": "Allow",
 							"direction": "Inbound",
-							"destinationPortRange": "3389",
+							"destinationPortRange": "22",
 							"protocol": "Tcp",
 							"sourceAddressPrefix": "*",
 							"sourcePortRange": "*",
@@ -186,13 +185,23 @@
 				"osProfile": {
 					"computerName": "[variables('vmName')]",
 					"adminUsername": "[parameters('adminUsername')]",
-					"adminPassword": "[parameters('adminPassword')]"
+					"linuxConfiguration": {
+						"disablePasswordAuthentication": true,
+						"ssh": {
+							"publicKeys": [
+								{
+									"path": "[concat('/home/', parameters('adminUsername'), '/.ssh/authorized_keys')]",
+									"keyData": "[parameters('adminPublicKey')]"
+								}
+							]
+						}
+					}
 				},
 				"storageProfile": {
 					"imageReference": {
-						"publisher": "MicrosoftWindowsServer",
-						"offer": "WindowsServer",
-						"sku": "2019-Datacenter",
+						"publisher": "RedHat",
+						"offer": "rhel-raw",
+						"sku": "8-raw",
 						"version": "latest"
 					},
 					"osDisk": {
@@ -215,33 +224,32 @@
 						"storageUri": "[concat('https://', parameters('storageUri'), '.blob.core.windows.net')]"
 					}
 				}
-			},
-			"resources": [
-				{
-					"type": "extensions",
-					"apiVersion": "2020-12-01",
-					"name": "CustomScriptExtension",
-					"location": "[parameters('location')]",
-					"dependsOn": [
-						"[variables('vmName')]"
-					],
-					"properties": {
-						"publisher": "Microsoft.Compute",
-						"type": "CustomScriptExtension",
-						"typeHandlerVersion": "1.8",
-						"autoUpgradeMinorVersion": true,
-						"settings": {
-							"commandToExecute": "reg add \"HKLM\\SYSTEM\\CurrentControlSet\\Control\\Terminal Server\\WinStations\\RDP-Tcp\" /v MinEncryptionLevel /t REG_DWORD /d 3 /f && reg add \"HKLM\\SYSTEM\\CurrentControlSet\\Control\\Terminal Server\\WinStations\\RDP-Tcp\" /v UserAuthentication /t REG_DWORD /d 0 /f && reg add \"HKLM\\SYSTEM\\CurrentControlSet\\Control\\Terminal Server\\WinStations\\RDP-Tcp\" /v SecurityLayer /t REG_DWORD /d 0 /f && shutdown /r /t 5"
-						}
-					}
-				}
-			]
+			}
+		},
+		{
+			"type": "Microsoft.Compute/virtualMachines/runCommands",
+			"apiVersion": "2021-11-01",
+			"name": "[concat(variables('vmName'),'/corruptInitrd')]",
+			"location": "[resourceGroup().location]",
+			"dependsOn": [
+				"[resourceId('Microsoft.Compute/virtualMachines', variables('vmName'))]"
+			],
+			"properties": {
+				"source": {
+					"script": ""
+				},
+				"timeoutInSeconds": 120
+			}
 		}
 	],
 	"outputs": {
 		"vm-fqdn": {
 			"type": "String",
 			"value": "[reference(variables('publicIPAddressName'), '2020-07-01').dnsSettings.fqdn]"
+		},
+		"sshCommand": {
+			"type": "string",
+			"value": "[format('ssh {0}@{1}', parameters('adminUsername'), reference(resourceId('Microsoft.Network/publicIPAddresses', variables('publicIPAddressName'))).dnsSettings.fqdn)]"
 		}
 	}
 }
