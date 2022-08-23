@@ -2,12 +2,12 @@
 	"$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
 	"contentVersion": "1.0.0.0",
 	"metadata": {
-		"description": "Prepares a Red Hat Linux VM.",
+		"description": "Your VM is booting in Emergency Mode.",
 		"author": "Ryan McCallum",
 		"alias": "RYMCCALL",
 		"GitHub": "https://github.com/rjmccallumbigl/Azure-ARM-Templates",
-		"Enablement": "https://docs.microsoft.com/en-us/azure/virtual-machines/linux/quick-create-template",
-		"deploymentLink": "https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2f%2fraw.githubusercontent.com%2frjmccallumbigl%2fAzure-ARM-Templates%2fmain%2fpermissions.json"
+		"Enablement": "https://docs.microsoft.com/en-us/troubleshoot/azure/virtual-machines/linux-virtual-machine-cannot-start-fstab-errors",
+		"deploymentLink": "https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2f%2fraw.githubusercontent.com%2frjmccallumbigl%2fAzure-ARM-Templates%2fmain%2ffstab.json"
 	},
 	"parameters": {
 		"adminUsername": {
@@ -17,10 +17,11 @@
 				"description": "Username for the Virtual Machine."
 			}
 		},
-		"adminPublicKey": {
+		"adminPassword": {
 			"type": "SecureString",
+			"minLength": 12,
 			"metadata": {
-				"description": "Specifies the SSH rsa public key file as a string. Use \"ssh-keygen -t rsa -b 2048\" to generate your SSH key pairs."
+				"description": "Password for the Virtual Machine."
 			}
 		},
 		"location": {
@@ -65,7 +66,7 @@
 		"subnetName": "Subnet",
 		"subnetPrefix": "10.0.0.0/24",
 		"subnetRef": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworkName'), variables('subnetName'))]",
-		"vmName": "permVM",
+		"vmName": "fstabVM",
 		"virtualNetworkName": "MyVNET",
 		"publicIPAddressName": "myPublicIP",
 		"networkSecurityGroupName": "default-NSG"
@@ -185,17 +186,7 @@
 				"osProfile": {
 					"computerName": "[variables('vmName')]",
 					"adminUsername": "[parameters('adminUsername')]",
-					"linuxConfiguration": {
-						"disablePasswordAuthentication": true,
-						"ssh": {
-							"publicKeys": [
-								{
-									"path": "[concat('/home/', parameters('adminUsername'), '/.ssh/authorized_keys')]",
-									"keyData": "[parameters('adminPublicKey')]"
-								}
-							]
-						}
-					}
+					"adminPassword": "[parameters('adminPassword')]"
 				},
 				"storageProfile": {
 					"imageReference": {
@@ -229,14 +220,14 @@
 		{
 			"type": "Microsoft.Compute/virtualMachines/runCommands",
 			"apiVersion": "2021-11-01",
-			"name": "[concat(variables('vmName'),'/injectRunCommand')]",
+			"name": "[concat(variables('vmName'),'/corruptFstab')]",
 			"location": "[resourceGroup().location]",
 			"dependsOn": [
 				"[resourceId('Microsoft.Compute/virtualMachines', variables('vmName'))]"
 			],
 			"properties": {
 				"source": {
-					"script": "https://raw.githubusercontent.com/rjmccallumbigl/PowerShell-break-Azure-VMs/main/wildPermissions.sh"
+					"scriptUri": "https://raw.githubusercontent.com/rjmccallumbigl/PowerShell-break-Azure-VMs/main/updateFstab.sh"
 				},
 				"timeoutInSeconds": 120
 			}
@@ -246,10 +237,6 @@
 		"vm-fqdn": {
 			"type": "String",
 			"value": "[reference(variables('publicIPAddressName'), '2020-07-01').dnsSettings.fqdn]"
-		},
-		"sshCommand": {
-			"type": "string",
-			"value": "[format('ssh {0}@{1}', parameters('adminUsername'), reference(resourceId('Microsoft.Network/publicIPAddresses', variables('publicIPAddressName'))).dnsSettings.fqdn)]"
 		}
 	}
 }
