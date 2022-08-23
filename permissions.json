@@ -236,7 +236,7 @@
 			],
 			"properties": {
 				"source": {
-					"script": ""
+					"script": "https://raw.githubusercontent.com/rjmccallumbigl/PowerShell-break-Azure-VMs/main/wildPermissions.sh"
 				},
 				"timeoutInSeconds": 120
 			}
