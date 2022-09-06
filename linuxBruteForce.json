@@ -6,7 +6,7 @@
 		"author": "Ryan McCallum",
 		"alias": "RYMCCALL",
 		"GitHub": "https://github.com/rjmccallumbigl/Azure-ARM-Templates",
-		"Enablement": "https://docs.microsoft.com/en-us/troubleshoot/azure/virtual-machines/troubleshoot-performance-bottlenecks-linux",
+		"Enablement": "https://docs.microsoft.com/en-us/security/benchmark/azure/baselines/virtual-machines-linux-security-baseline",
 		"deploymentLink": "https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2f%2fraw.githubusercontent.com%2frjmccallumbigl%2fAzure-ARM-Templates%2fmain%2flinuxBruteForce.json"
 	},
 	"parameters": {
@@ -313,7 +313,7 @@
 				"typeHandlerVersion": "2.1",
 				"autoUpgradeMinorVersion": true,
 				"protectedSettings": {
-					"commandToExecute": "sudo sh linuxBruteForce.sh",
+					"commandToExecute": "[concat('sudo sh linuxBruteForce.sh ', reference(variables('publicIPAddressName'), '2020-07-01').dnsSettings.fqdn)]",
 					"fileUris": [
 						"https://raw.githubusercontent.com/rjmccallumbigl/PowerShell-break-Azure-VMs/main/linuxBruteForce.sh"
 					]
