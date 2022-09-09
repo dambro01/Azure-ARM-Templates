@@ -1,0 +1,70 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"vmssName": {
+			"defaultValue": "scaleset",
+			"type": "String",
+			"metadata": {
+				"description": "Name of your VMSS."
+			}
+		},
+		"domainName": {
+			"defaultValue": "corp.contoso.com",
+			"type": "String",
+			"metadata": {
+				"description": "Enter your domain name."
+			}
+		},
+		"domainAndUsername": {
+			"defaultValue": "username@domain",
+			"type": "String",
+			"metadata": {
+				"description": "Username for the user who can add the server to the domain."
+			}
+		},
+		"domainJoinPassword": {
+			"type": "SecureString",
+			"metadata": {
+				"description": "Domain credential of the user who can add the server to the domain."
+			}
+		},
+		"domainJoinOptions": {
+			"defaultValue": "3",
+			"type": "int",
+			"metadata": {
+				"description": "FJoinOptions: https://docs.microsoft.com/en-us/windows/win32/cimwin32prov/joindomainorworkgroup-method-in-class-win32-computersystem?redirectedfrom=MSDN"
+			}
+		},
+		"ouPath": {
+			"defaultValue": "\"OU=vmss,DC=corp,DC=contoso,DC=com\"",
+			"type": "String",
+			"metadata": {
+				"description": "OU path (not Computers!)"
+			}
+		}
+	},
+	"resources": [
+		{
+			"type": "Microsoft.Compute/virtualMachineScaleSets/extensions",
+			"apiVersion": "2020-06-01",
+			"name": "[concat(parameters('vmssName'),'/joindomain')]",
+			"properties": {
+				"publisher": "Microsoft.Compute",
+				"type": "JsonADDomainExtension",
+				"autoUpgradeMinorVersion": true,
+				"typeHandlerVersion": "1.3",
+				"settings": {
+					"Name": "[parameters('domainName')]",
+					"OUPath": "[parameters('ouPath')]",
+					"User": "[parameters('domainAndUsername')]",
+					"Restart": "true",
+					"Options": "[parameters('domainJoinOptions')]"
+				},
+				"protectedsettings": {
+					"Password": "[parameters('domainJoinPassword')]"
+				}
+			}
+		}
+	]
+}
