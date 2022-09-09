@@ -16,8 +16,8 @@
 				"description": "Enter your domain name."
 			}
 		},
-		"domainAndUsername": {
-			"defaultValue": "username@domain",
+		"username": {
+			"defaultValue": "AzureAdmin",
 			"type": "String",
 			"metadata": {
 				"description": "Username for the user who can add the server to the domain."
@@ -29,15 +29,8 @@
 				"description": "Domain credential of the user who can add the server to the domain."
 			}
 		},
-		"domainJoinOptions": {
-			"defaultValue": "3",
-			"type": "int",
-			"metadata": {
-				"description": "FJoinOptions: https://docs.microsoft.com/en-us/windows/win32/cimwin32prov/joindomainorworkgroup-method-in-class-win32-computersystem?redirectedfrom=MSDN"
-			}
-		},
 		"ouPath": {
-			"defaultValue": "\"OU=vmss,DC=corp,DC=contoso,DC=com\"",
+			"defaultValue": "OU=vmss,DC=corp,DC=contoso,DC=com",
 			"type": "String",
 			"metadata": {
 				"description": "OU path (not Computers!)"
@@ -57,9 +50,9 @@
 				"settings": {
 					"Name": "[parameters('domainName')]",
 					"OUPath": "[parameters('ouPath')]",
-					"User": "[parameters('domainAndUsername')]",
+					"User": "[concat(parameters('domainName'), '\\', parameters('username'))]",
 					"Restart": "true",
-					"Options": "[parameters('domainJoinOptions')]"
+					"Options": "3"
 				},
 				"protectedsettings": {
 					"Password": "[parameters('domainJoinPassword')]"
