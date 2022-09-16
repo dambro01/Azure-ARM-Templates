@@ -7,7 +7,7 @@
         "alias": "RYMCCALL",
         "GitHub": "https://github.com/rjmccallumbigl/Azure-ARM-Templates",
         "Enablement": "https://docs.microsoft.com/en-us/azure/virtual-machines/disks-benchmarks",
-        "deploymentLink": "https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2f%2fraw.githubusercontent.com%2frjmccallumbigl%2fAzure-ARM-Templates%2fmain%2fhighDiskUsage.json"
+        "deploymentLink": "https://labbox.azurewebsites.net/api/Labbox?url=https://raw.githubusercontent.com/rjmccallumbigl/Azure-ARM-Templates/main/highDiskUsage.json"
     },
     "parameters": {
         "adminUsername": {
@@ -231,13 +231,13 @@
                         "typeHandlerVersion": "1.8",
                         "autoUpgradeMinorVersion": true,
                         "settings": {
-							"fileUris": [
-								"https://raw.githubusercontent.com/rjmccallumbigl/PowerShell-break-Azure-VMs/main/highDiskUsage.bat"
-							]
-						},
-						"protectedSettings": {
-							"commandToExecute": "[concat('powershell Start-Process highDiskUsage.bat')]"
-						}
+                            "fileUris": [
+                                "https://raw.githubusercontent.com/rjmccallumbigl/PowerShell-break-Azure-VMs/main/highDiskUsage.bat"
+                            ]
+                        },
+                        "protectedSettings": {
+                            "commandToExecute": "[concat('powershell Start-Process highDiskUsage.bat')]"
+                        }
                     }
                 }
             ]

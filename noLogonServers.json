@@ -7,7 +7,7 @@
 		"alias": "RYMCCALL",
 		"GitHub": "https://github.com/rjmccallumbigl/Azure-ARM-Templates",
 		"Enablement": "https://www.dell.com/support/kbdoc/en-us/000123346/windows-login-no-logon-servers-available",
-		"deploymentLink": "https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2f%2fraw.githubusercontent.com%2frjmccallumbigl%2fAzure-ARM-Templates%2fmain%2fnoLogonServers.json"
+		"deploymentLink": "https://labbox.azurewebsites.net/api/Labbox?url=https://raw.githubusercontent.com/rjmccallumbigl/Azure-ARM-Templates/main/noLogonServers.json"
 	},
 	"parameters": {
 		"configName": {

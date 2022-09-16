@@ -7,7 +7,7 @@
 		"alias": "RYMCCALL",
 		"GitHub": "https://github.com/rjmccallumbigl/Azure-ARM-Templates",
 		"Enablement": "https://docs.microsoft.com/en-us/troubleshoot/azure/virtual-machines/troubleshoot-broken-secure-channel",
-		"deploymentLink": "https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2f%2fraw.githubusercontent.com%2frjmccallumbigl%2fAzure-ARM-Templates%2fmain%2ftrustRelationshipBroke.json"
+		"deploymentLink": "https://labbox.azurewebsites.net/api/Labbox?url=https://raw.githubusercontent.com/rjmccallumbigl/Azure-ARM-Templates/main/trustRelationshipBroke.json"
 	},
 	"parameters": {
 		"configName": {
@@ -387,7 +387,6 @@
 				"[resourceId('Microsoft.Compute/virtualMachines/runCommands', 'DC1', 'addDomainUserToDC1WithRunCommand')]",
 				"[concat('Microsoft.Resources/deployments/','AppServer')]",
 				"[resourceId('Microsoft.Compute/virtualMachines', variables('VMs').appVmName)]"
-
 			],
 			"properties": {
 				"protectedParameters": [
@@ -438,7 +437,6 @@
 				"[resourceId('Microsoft.Resources/deployments', 'AppServer')]",
 				"[resourceId('Microsoft.Compute/virtualMachines/runCommands', 'APP1', 'resetApp1PasswordWithRunCommand')]",
 				"[resourceId('Microsoft.Compute/virtualMachines/runCommands', 'APP1', 'addDomainUserToApp1WithRunCommand')]"
-
 			],
 			"identity": {
 				"type": "UserAssigned",

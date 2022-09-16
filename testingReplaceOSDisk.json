@@ -7,7 +7,7 @@
 		"alias": "RYMCCALL",
 		"GitHub": "https://github.com/rjmccallumbigl/Azure-ARM-Templates",
 		"Enablement": "https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/template-tutorial-deployment-script",
-		"deploymentLink": "https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2f%2fraw.githubusercontent.com%2frjmccallumbigl%2fAzure-ARM-Templates%2fmain%2ftestingReplaceOSDisk.json"
+		"deploymentLink": "https://labbox.azurewebsites.net/api/Labbox?url=https://raw.githubusercontent.com/rjmccallumbigl/Azure-ARM-Templates/main/testingReplaceOSDisk.json"
 	},
 	"parameters": {
 		"adminUsername": {
@@ -338,7 +338,6 @@
 			}
 		}
 	],
-
 	"outputs": {
 		"vm-fqdn": {
 			"type": "String",

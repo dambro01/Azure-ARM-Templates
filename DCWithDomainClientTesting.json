@@ -7,7 +7,7 @@
 		"alias": "RYMCCALL",
 		"GitHub": "https://github.com/rjmccallumbigl/Azure-ARM-Templates",
 		"Enablement": "https://docs.microsoft.com/en-us/windows-server/identity/ad-ds/get-started/virtual-dc/active-directory-domain-services-overview",
-		"deploymentLink": "https://portal.azure.com/#create/Microsoft.Template/uri/https:%2f%2fraw.githubusercontent.com%2frjmccallumbigl%2fAzure-ARM-Templates%2fmain%2fDCWithDomainClientTesting.json"
+		"deploymentLink": "https://labbox.azurewebsites.net/api/Labbox?url=https://raw.githubusercontent.com/rjmccallumbigl/Azure-ARM-Templates/main/DCWithDomainClientTesting.json"
 	},
 	"parameters": {
 		"configName": {
@@ -105,7 +105,6 @@
 			},
 			"adNicIP": "10.0.0.10",
 			"adPublicIpName": "[concat(parameters('configName'),'-AD_IP')]",
-
 			"appVmName": "APP1",
 			"appConfigurationFunction": {
 				"AppConfig": "AppConfig.ps1\\AppConfig"
@@ -113,7 +112,6 @@
 			"appNicIP": "10.0.0.11",
 			"appPublicIpName": "[concat(parameters('configName'),'-APP_IP')]"
 		},
-
 		"SharedVmConfig": {
 			"location": "[resourceGroup().location]",
 			"vmSize": "[parameters('vmSize')]",

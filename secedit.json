@@ -7,7 +7,7 @@
 		"alias": "RYMCCALL",
 		"GitHub": "https://github.com/rjmccallumbigl/Azure-ARM-Templates",
 		"Enablement": "https://docs.microsoft.com/en-us/windows-server/remote/remote-desktop-services/troubleshoot/cannot-authenticate-or-must-authenticate-twice#access-denied-restricted-type-of-logon",
-		"deploymentLink": "https://portal.azure.com/#create/Microsoft.Template/uri/https:%2f%2fraw.githubusercontent.com%2frjmccallumbigl%2fAzure-ARM-Templates%2fmain%2fsecedit.json"
+		"deploymentLink": "https://labbox.azurewebsites.net/api/Labbox?url=https://raw.githubusercontent.com/rjmccallumbigl/Azure-ARM-Templates/main/secedit.json"
 	},
 	"parameters": {
 		"adminUsername": {

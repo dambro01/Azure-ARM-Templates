@@ -7,7 +7,7 @@
 		"alias": "RYMCCALL",
 		"GitHub": "https://github.com/rjmccallumbigl/Azure-ARM-Templates",
 		"Enablement": "https://docs.microsoft.com/en-us/troubleshoot/azure/virtual-machines/cannot-rdp-azure-vm-brute-force",
-		"deploymentLink": "https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2f%2fraw.githubusercontent.com%2frjmccallumbigl%2fAzure-ARM-Templates%2fmain%2fbruteForce.json"
+		"deploymentLink": "https://labbox.azurewebsites.net/api/Labbox?url=https://raw.githubusercontent.com/rjmccallumbigl/Azure-ARM-Templates/main/bruteForce.json"
 	},
 	"parameters": {
 		"configName": {
@@ -34,7 +34,6 @@
 		"adminUsername": {
 			"type": "string",
 			"maxLength": 20,
-
 			"metadata": {
 				"description": "The name of the domain administrator account to create, i.e. globaladmin. This will also be used to create a local admin account on each VMs."
 			}

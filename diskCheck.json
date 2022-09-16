@@ -7,7 +7,7 @@
         "alias": "RYMCCALL",
         "GitHub": "https://github.com/rjmccallumbigl/Azure-ARM-Templates",
         "Enablement": "https://docs.microsoft.com/en-us/troubleshoot/azure/virtual-machines/troubleshoot-check-disk-boot-error",
-        "deploymentLink": "https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2f%2fraw.githubusercontent.com%2frjmccallumbigl%2fAzure-ARM-Templates%2fmain%2fdiskCheck.json"
+        "deploymentLink": "https://labbox.azurewebsites.net/api/Labbox?url=https://raw.githubusercontent.com/rjmccallumbigl/Azure-ARM-Templates/main/diskCheck.json"
     },
     "parameters": {
         "adminUsername": {
@@ -200,7 +200,7 @@
                         "managedDisk": {
                             "storageAccountType": "StandardSSD_LRS"
                         },
-						"diskSizeGB": 2000
+                        "diskSizeGB": 2000
                     }
                 },
                 "networkProfile": {

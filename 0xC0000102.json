@@ -7,7 +7,7 @@
 		"alias": "RYMCCALL",
 		"GitHub": "https://github.com/rjmccallumbigl/Azure-ARM-Templates",
 		"Enablement": "https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/template-tutorial-deployment-script",
-		"deploymentLink": "https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2f%2fraw.githubusercontent.com%2frjmccallumbigl%2fAzure-ARM-Templates%2fmain%2f0xC0000102.json"
+		"deploymentLink": "https://labbox.azurewebsites.net/api/Labbox?url=https://raw.githubusercontent.com/rjmccallumbigl/Azure-ARM-Templates/main/0xC0000102.json"
 	},
 	"parameters": {
 		"adminUsername": {
@@ -429,7 +429,7 @@
 			"location": "[resourceGroup().location]",
 			"apiVersion": "2019-03-01",
 			"dependsOn": [
-			"[resourceId('Microsoft.Compute/virtualMachines/runCommands', 'rhelVM', 'modifyWindowsDisk')]"
+				"[resourceId('Microsoft.Compute/virtualMachines/runCommands', 'rhelVM', 'modifyWindowsDisk')]"
 			],
 			"properties": {
 				"publisher": "Microsoft.Azure.Extensions",

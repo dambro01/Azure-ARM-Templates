@@ -7,7 +7,7 @@
 		"alias": "RYMCCALL",
 		"GitHub": "https://github.com/rjmccallumbigl/Azure-ARM-Templates",
 		"Enablement": "https://support.huaweicloud.com/intl/en-us/ecs_faq/ecs_faq_0534.html",
-		"deploymentLink": "https://portal.azure.com/#create/Microsoft.Template/uri/https:%2f%2fraw.githubusercontent.com%2frjmccallumbigl%2fAzure-ARM-Templates%2fmain%2f0x1104.json"
+		"deploymentLink": "https://labbox.azurewebsites.net/api/Labbox?url=https://raw.githubusercontent.com/rjmccallumbigl/Azure-ARM-Templates/main/0x1104.json"
 	},
 	"parameters": {
 		"adminUsername": {
@@ -216,21 +216,21 @@
 					}
 				}
 			}
-		// },
-		// {
-		// 	"type": "Microsoft.Compute/virtualMachines/runCommands",
-		// 	"apiVersion": "2021-11-01",
-		// 	"name": "[concat(variables('vmName'),'/generalizeWithRunCommand')]",
-		// 	"location": "[resourceGroup().location]",
-		// 	"dependsOn": [
-		// 		"[resourceId('Microsoft.Compute/virtualMachines', variables('vmName'))]"
-		// 	],
-		// 	"properties": {
-		// 		"source": {
-		// 			"script": "[concat('& \"$env:windir\\system32\\sysprep\\Sysprep.exe\" /generalize /reboot /oobe;')]"
-		// 		},
-		// 		"timeoutInSeconds": 60
-		// 	}
+			// },
+			// {
+			// 	"type": "Microsoft.Compute/virtualMachines/runCommands",
+			// 	"apiVersion": "2021-11-01",
+			// 	"name": "[concat(variables('vmName'),'/generalizeWithRunCommand')]",
+			// 	"location": "[resourceGroup().location]",
+			// 	"dependsOn": [
+			// 		"[resourceId('Microsoft.Compute/virtualMachines', variables('vmName'))]"
+			// 	],
+			// 	"properties": {
+			// 		"source": {
+			// 			"script": "[concat('& \"$env:windir\\system32\\sysprep\\Sysprep.exe\" /generalize /reboot /oobe;')]"
+			// 		},
+			// 		"timeoutInSeconds": 60
+			// 	}
 		}
 	],
 	"outputs": {

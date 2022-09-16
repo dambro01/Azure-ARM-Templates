@@ -7,7 +7,7 @@
 		"alias": "RYMCCALL",
 		"GitHub": "https://github.com/rjmccallumbigl/Azure-ARM-Templates",
 		"Enablement": "https://docs.microsoft.com/en-us/azure/virtual-machines/windows/disk-encryption-portal-quickstart",
-		"deploymentLink": "https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2f%2fraw.githubusercontent.com%2frjmccallumbigl%2fAzure-ARM-Templates%2fmain%2fworkingEncryptedWindowsVM.json"
+		"deploymentLink": "https://labbox.azurewebsites.net/api/Labbox?url=https://raw.githubusercontent.com/rjmccallumbigl/Azure-ARM-Templates/main/workingEncryptedWindowsVM.json"
 	},
 	"parameters": {
 		"adminUsername": {
@@ -229,7 +229,6 @@
 					"osDisk": {
 						"createOption": "FromImage",
 						"managedDisk": "[if(equals(variables('disk-encryption-type'), 'ADE'), json('null'), variables('managed-disk-json'))]"
-
 					}
 				},
 				"networkProfile": {

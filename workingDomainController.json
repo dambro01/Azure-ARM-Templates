@@ -7,7 +7,7 @@
 		"alias": "RYMCCALL",
 		"GitHub": "https://github.com/rjmccallumbigl/Azure-ARM-Templates",
 		"Enablement": "https://docs.microsoft.com/en-us/windows-server/identity/ad-ds/deploy/virtual-dc/virtualized-domain-controller-technical-reference--level-300-",
-		"deploymentLink": "https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2f%2fraw.githubusercontent.com%2frjmccallumbigl%2fAzure-ARM-Templates%2fmain%2fworkingDomainController.json"
+		"deploymentLink": "https://labbox.azurewebsites.net/api/Labbox?url=https://raw.githubusercontent.com/rjmccallumbigl/Azure-ARM-Templates/main/workingDomainController.json"
 	},
 	"parameters": {
 		"configName": {
@@ -57,7 +57,7 @@
 				"description": "The domain user account password."
 			}
 		},
-				"vmSize": {
+		"vmSize": {
 			"type": "string",
 			"metadata": {
 				"description": "Select a VM size for all VMs in your deployment."

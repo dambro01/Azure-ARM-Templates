@@ -7,7 +7,7 @@
         "alias": "RYMCCALL",
         "GitHub": "https://github.com/rjmccallumbigl/Azure-ARM-Templates",
         "Enablement": "https://docs.microsoft.com/en-us/azure/virtual-machines/windows/expand-os-disk",
-        "deploymentLink": "https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2f%2fraw.githubusercontent.com%2frjmccallumbigl%2fAzure-ARM-Templates%2fmain%2fdiskFull.json"
+        "deploymentLink": "https://labbox.azurewebsites.net/api/Labbox?url=https://raw.githubusercontent.com/rjmccallumbigl/Azure-ARM-Templates/main/diskFull.json"
     },
     "parameters": {
         "adminUsername": {
@@ -231,7 +231,7 @@
                         "typeHandlerVersion": "1.8",
                         "autoUpgradeMinorVersion": true,
                         "settings": {
-							"commandToExecute": "powershell (new-object System.IO.FileStream 'C:\\Users\\Public\\Desktop\\largeFile.txt', Create, ReadWrite).SetLength((Get-CimInstance -ClassName Win32_LogicalDisk)[0].FreeSpace)"
+                            "commandToExecute": "powershell (new-object System.IO.FileStream 'C:\\Users\\Public\\Desktop\\largeFile.txt', Create, ReadWrite).SetLength((Get-CimInstance -ClassName Win32_LogicalDisk)[0].FreeSpace)"
                         }
                     }
                 }
