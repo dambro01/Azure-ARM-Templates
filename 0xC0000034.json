@@ -2,7 +2,7 @@
 	"$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
 	"contentVersion": "1.0.0.0",
 	"metadata": {
-		"description": "Your server failed to start due to error Error 0xC0000034 (STATUS_OBJECT_NAME_NOT_FOUND).",
+		"description": "Your server failed to start due to error Error 0xC0000034.",
 		"author": "Ryan McCallum",
 		"alias": "RYMCCALL",
 		"GitHub": "https://github.com/rjmccallumbigl/Azure-ARM-Templates",
