@@ -227,7 +227,7 @@
 			],
 			"properties": {
 				"source": {
-					"script": "[concat('Get-NetFirewallrule -DisplayName \"Remote Desktop - User Mode (TCP-In)\" | Get-NetFirewallAddressFilter | Set-NetFirewallAddressFilter -RemoteAddress 192.168.1.10; bcdedit /ems ''{current}'' off;')]"
+					"script": "[concat('Get-NetFirewallrule -DisplayName \"Remote Desktop - User Mode (TCP-In)\" | Get-NetFirewallAddressFilter | Set-NetFirewallAddressFilter -RemoteAddress 192.168.1.10; bcdedit /ems ''{current}'' off; Restart-Computer -Force;')]"
 				},
 				"timeoutInSeconds": 60
 			}
