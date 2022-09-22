@@ -1,0 +1,10 @@
+{
+	"recommendations": [
+		"ms-vscode.azure-account",
+		"ms-vscode.azurecli",
+		"msazurermtools.azurerm-vscode-tools",
+		"ms-azuretools.vscode-azureresourcegroups",
+		"formulahendry.azure-virtual-machine-explorer",
+		"ms-azuretools.vscode-azurevirtualmachines"
+	]
+}
