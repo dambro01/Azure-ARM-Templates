@@ -146,7 +146,7 @@
 				"forceUpdateTag": "[parameters('utcValue')]",
 				"azCliVersion": "2.8.0",
 				"timeout": "PT30M",
-				"scriptContent": "account=$(az account show -o json);tenant=$(echo $account | jq -r '.tenantId');upn=$(echo $account | jq -r '.user.name');adUser=$(az ad user show --id $upn -o json);objectId=$(echo $adUser | jq -r '.id');echo \"{ 'objectId': $objectId, 'tenantId': $tenant }\" > $AZ_SCRIPTS_OUTPUT_PATH;",
+				"scriptContent": "account=$(az account show -o json);tenant=$(echo $account | jq -r '.tenantId');upn=$(echo $account | jq -r '.user.name');adUser=$(az ad user show --id $upn -o json);objectId=$(echo $adUser | jq -r '.id'); jq -n --arg objectId $objectId --arg tenant $tenant '{objectId:$objectId,tenantId:$tenant}'> $AZ_SCRIPTS_OUTPUT_PATH;",
 				"cleanupPreference": "OnSuccess",
 				"retentionInterval": "P1D"
 			}
