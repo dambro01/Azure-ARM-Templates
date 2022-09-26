@@ -1,0 +1,184 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"metadata": {
+		"description": "Deploy a key vault.",
+		"author": "Ryan McCallum",
+		"alias": "RYMCCALL",
+		"GitHub": "https://github.com/rjmccallumbigl/Azure-ARM-Templates",
+		"Enablement": "https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/template-tutorial-deployment-script",
+		"deploymentLink": "https://labbox.azurewebsites.net/api/Labbox?url=https://raw.githubusercontent.com/rjmccallumbigl/Azure-ARM-Templates/main/keyvault.json"
+	},
+	"parameters": {
+		"location": {
+			"defaultValue": "[resourceGroup().location]",
+			"type": "String",
+			"metadata": {
+				"description": "Location for all resources."
+			}
+		},
+		"utcValue": {
+			"defaultValue": "[utcNow()]",
+			"type": "string",
+			"metadata": {
+				"description": "UTC"
+			}
+		},
+		"keyVaultName": {
+			"type": "string",
+			"metadata": {
+				"description": "Specifies the name of the key vault."
+			}
+		},
+		// "tenantId": {
+		// 	"type": "string",
+		// 	"metadata": {
+		// 		"description": "Tenant Id for the subscription and use assigned access to the vault. Available from the Get-AzureRMSubscription PowerShell cmdlet"
+		// 	}
+		// },
+		// "objectId": {
+		// 	"type": "string",
+		// 	"metadata": {
+		// 		"description": "Object Id of the AAD user or service principal that will have access to the vault. Available from the Get-AzureRMADUser or the Get-AzureRMADServicePrincipal cmdlets"
+		// 	}
+		// },
+		"keysPermissions": {
+			"type": "array",
+			"defaultValue": [ "all" ],
+			"metadata": {
+				"description": "Permissions to grant user to keys in the vault. Valid values are: all, create, import, update, get, list, delete, backup, restore, encrypt, decrypt, wrapkey, unwrapkey, sign, and verify."
+			}
+		},
+		"secretsPermissions": {
+			"type": "array",
+			"defaultValue": [ "all" ],
+			"metadata": {
+				"description": "Permissions to grant user to secrets in the vault. Valid values are: all, get, set, list, and delete."
+			}
+		},
+		"vaultSku": {
+			"type": "string",
+			"defaultValue": "Standard",
+			"allowedValues": [
+				"Standard",
+				"Premium"
+			],
+			"metadata": {
+				"description": "SKU for the vault"
+			}
+		},
+		"enabledForDeployment": {
+			"type": "bool",
+			"defaultValue": false,
+			"metadata": {
+				"description": "Specifies if the vault is enabled for VM or Service Fabric deployment"
+			}
+		},
+		"enabledForTemplateDeployment": {
+			"type": "bool",
+			"defaultValue": false,
+			"metadata": {
+				"description": "Specifies if the vault is enabled for ARM template deployment"
+			}
+		},
+		"enableVaultForVolumeEncryption": {
+			"type": "bool",
+			"defaultValue": true,
+			"metadata": {
+				"description": "Specifies if the vault is enabled for volume encryption"
+			}
+		}
+		// "secretName": {
+		// 	"type": "string",
+		// 	"metadata": {
+		// 		"description": "Name of the secret to store in the vault"
+		// 	}
+		// },
+		// "secretValue": {
+		// 	"type": "securestring",
+		// 	"metadata": {
+		// 		"description": "Value of the secret to store in the vault"
+		// 	}
+		// }
+	},
+	"variables": {
+		"userIdentity": "[tolower(concat('ui-', uniquestring(resourceGroup().id)))]",
+		"bootstrapRoleAssignmentId": "[guid(concat(resourceGroup().id, 'contributor'))]",
+		"contributorRoleDefinitionId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', 'b24988ac-6180-42a0-ab88-20f7382dd24c')]"
+	},
+	"resources": [
+		{
+			"type": "Microsoft.ManagedIdentity/userAssignedIdentities",
+			"name": "[variables('userIdentity')]",
+			"apiVersion": "2018-11-30",
+			"location": "[parameters('location')]"
+		},
+		{
+			"type": "Microsoft.Authorization/roleAssignments",
+			"apiVersion": "2018-09-01-preview",
+			"name": "[variables('bootstrapRoleAssignmentId')]",
+			"dependsOn": [
+				"[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('userIdentity'))]"
+			],
+			"properties": {
+				"roleDefinitionId": "[variables('contributorRoleDefinitionId')]",
+				"principalId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('userIdentity')), '2018-11-30').principalId]",
+				"principalType": "ServicePrincipal"
+			}
+		},
+		{
+			"type": "Microsoft.Resources/deploymentScripts",
+			"apiVersion": "2020-10-01",
+			"name": "getAADInfo",
+			"location": "[parameters('location')]",
+			"dependsOn": [
+				"[resourceId('Microsoft.Authorization/roleAssignments', variables('bootstrapRoleAssignmentId'))]",
+				"[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('userIdentity'))]"
+			],
+			"identity": {
+				"type": "UserAssigned",
+				"userAssignedIdentities": {
+					"[format('{0}', resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('userIdentity')))]": {}
+				}
+			},
+			"kind": "AzureCLI",
+			"properties": {
+				"forceUpdateTag": "[parameters('utcValue')]",
+				"azCliVersion": "2.8.0",
+				"timeout": "PT30M",
+				"scriptContent": "account=$(az account show -o json);tenant=$(echo $account | jq -r '.tenantId');upn=$(echo $account | jq -r '.user.name');adUser=$(az ad user show --id $upn -o json);objectId=$(echo $adUser | jq -r '.id');echo \"{ 'objectId': $objectId, 'tenantId': $tenant }\" > $AZ_SCRIPTS_OUTPUT_PATH;",
+				"cleanupPreference": "OnSuccess",
+				"retentionInterval": "P1D"
+			}
+		},
+		{
+			"type": "Microsoft.KeyVault/vaults",
+			"name": "[parameters('keyVaultName')]",
+			"apiVersion": "2015-06-01",
+			"location": "[resourceGroup().location]",
+			"dependsOn": [
+				"[resourceId('Microsoft.Resources/deploymentScripts', 'getAADInfo')]"
+			],
+			"properties": {
+				"enabledForDeployment": "[parameters('enabledForDeployment')]",
+				"enabledForTemplateDeployment": "[parameters('enabledForTemplateDeployment')]",
+				"enabledForVolumeEncryption": "[parameters('enableVaultForVolumeEncryption')]",
+				"tenantId": "[reference('getAADInfo').outputs.tenantId]",
+				"accessPolicies": [
+					{
+						"tenantId": "[reference('getAADInfo').outputs.tenantId]",
+						"objectId": "[reference('getAADInfo').outputs.objectId]",
+						"permissions": {
+							"keys": "[parameters('keysPermissions')]",
+							"secrets": "[parameters('secretsPermissions')]"
+						}
+					}
+				],
+				"sku": {
+					"name": "[parameters('vaultSku')]",
+					"family": "A"
+				}
+			}
+		}
+	]
+}
