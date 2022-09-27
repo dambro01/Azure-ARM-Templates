@@ -10,6 +10,48 @@
 		"deploymentLink": "https://labbox.azurewebsites.net/api/Labbox?url=https://raw.githubusercontent.com/rjmccallumbigl/Azure-ARM-Templates/main/keyvault.json"
 	},
 	"parameters": {
+		"adminUsername": {
+			"type": "String",
+			"maxLength": 20,
+			"metadata": {
+				"description": "Username for the Virtual Machine."
+			}
+		},
+		"adminPassword": {
+			"type": "SecureString",
+			"minLength": 12,
+			"metadata": {
+				"description": "Password for the Virtual Machine."
+			}
+		},
+		"vmSize": {
+			"defaultValue": "Standard_D2_v3",
+			"type": "String",
+			"metadata": {
+				"description": "Default VM Size"
+			}
+		},
+		"dnsNameForPublicIP": {
+			"defaultValue": "[tolower(concat('dns', uniquestring(resourceGroup().id)))]",
+			"type": "String",
+			"metadata": {
+				"description": "DNS name for the public IP"
+			}
+		},
+		"storageUri": {
+			"defaultValue": "[format('store{0}', uniqueString(resourceGroup().id))]",
+			"type": "string",
+			"metadata": {
+				"description": "Name of storage account For Boot Diagnostics"
+			}
+		},
+		"storageAccountType": {
+			"type": "string",
+			"defaultValue": "Standard_LRS",
+			"metadata": {
+				"description": "Storage Account type"
+			}
+		},
 		"location": {
 			"defaultValue": "[resourceGroup().location]",
 			"type": "String",
@@ -102,6 +144,15 @@
 		// }
 	},
 	"variables": {
+		"nicName": "myVMNic",
+		"addressPrefix": "10.0.0.0/16",
+		"subnetName": "Subnet",
+		"subnetPrefix": "10.0.0.0/24",
+		"subnetRef": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworkName'), variables('subnetName'))]",
+		"vmName": "encryptVM",
+		"virtualNetworkName": "MyVNET",
+		"publicIPAddressName": "myPublicIP",
+		"networkSecurityGroupName": "default-NSG",
 		"userIdentity": "[tolower(concat('ui-', uniquestring(resourceGroup().id)))]",
 		"bootstrapRoleAssignmentId": "[guid(concat(resourceGroup().id, 'contributor'))]",
 		"contributorRoleDefinitionId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', 'b24988ac-6180-42a0-ab88-20f7382dd24c')]"
@@ -127,47 +178,223 @@
 			}
 		},
 		{
-			"type": "Microsoft.Resources/deploymentScripts",
-			"apiVersion": "2020-10-01",
-			"name": "getAADInfo",
+			"type": "Microsoft.Network/publicIPAddresses",
+			"apiVersion": "2020-08-01",
+			"name": "[variables('publicIPAddressName')]",
+			"location": "[parameters('location')]",
+			"properties": {
+				"publicIPAllocationMethod": "Dynamic",
+				"dnsSettings": {
+					"domainNameLabel": "[parameters('dnsNameForPublicIP')]"
+				}
+			}
+		},
+		{
+			"type": "Microsoft.Network/networkSecurityGroups",
+			"apiVersion": "2020-08-01",
+			"name": "[variables('networkSecurityGroupName')]",
+			"location": "[parameters('location')]",
+			"properties": {
+				"securityRules": [
+					{
+						"name": "default-allow-3389",
+						"properties": {
+							"priority": 1000,
+							"access": "Allow",
+							"direction": "Inbound",
+							"destinationPortRange": "3389",
+							"protocol": "Tcp",
+							"sourceAddressPrefix": "*",
+							"sourcePortRange": "*",
+							"destinationAddressPrefix": "*"
+						}
+					}
+				]
+			}
+		},
+		{
+			"type": "Microsoft.Network/virtualNetworks",
+			"apiVersion": "2020-08-01",
+			"name": "[variables('virtualNetworkName')]",
 			"location": "[parameters('location')]",
 			"dependsOn": [
-				"[resourceId('Microsoft.Authorization/roleAssignments', variables('bootstrapRoleAssignmentId'))]",
-				"[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('userIdentity'))]"
+				"[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSecurityGroupName'))]"
 			],
+			"properties": {
+				"addressSpace": {
+					"addressPrefixes": [
+						"[variables('addressPrefix')]"
+					]
+				},
+				"subnets": [
+					{
+						"name": "[variables('subnetName')]",
+						"properties": {
+							"addressPrefix": "[variables('subnetPrefix')]",
+							"networkSecurityGroup": {
+								"id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSecurityGroupName'))]"
+							}
+						}
+					}
+				]
+			}
+		},
+		{
+			"type": "Microsoft.Network/networkInterfaces",
+			"apiVersion": "2020-08-01",
+			"name": "[variables('nicName')]",
+			"location": "[parameters('location')]",
+			"dependsOn": [
+				"[variables('publicIPAddressName')]",
+				"[variables('virtualNetworkName')]"
+			],
+			"properties": {
+				"ipConfigurations": [
+					{
+						"name": "ipconfig1",
+						"properties": {
+							"privateIPAllocationMethod": "Dynamic",
+							"publicIPAddress": {
+								"id": "[resourceId('Microsoft.Network/publicIPAddresses',variables('publicIPAddressName'))]"
+							},
+							"subnet": {
+								"id": "[variables('subnetRef')]"
+							}
+						}
+					}
+				]
+			}
+		},
+		{
+			"type": "Microsoft.Network/networkInterfaces",
+			"apiVersion": "2020-08-01",
+			"name": "linuxNIC",
+			"location": "[parameters('location')]",
+			"dependsOn": [
+				"[variables('virtualNetworkName')]"
+			],
+			"properties": {
+				"ipConfigurations": [
+					{
+						"name": "ipconfig1",
+						"properties": {
+							"privateIPAllocationMethod": "Dynamic",
+							"subnet": {
+								"id": "[variables('subnetRef')]"
+							}
+						}
+					}
+				]
+			}
+		},
+		{
+			"type": "Microsoft.Storage/storageAccounts",
+			"apiVersion": "2021-06-01",
+			"name": "[parameters('storageUri')]",
+			"location": "[parameters('location')]",
+			"sku": {
+				"name": "[parameters('storageAccountType')]"
+			},
+			"kind": "StorageV2",
+			"properties": {}
+		},
+		{
+			"type": "Microsoft.Compute/virtualMachines",
+			"apiVersion": "2020-12-01",
+			"name": "[variables('vmName')]",
+			"location": "[parameters('location')]",
 			"identity": {
 				"type": "UserAssigned",
 				"userAssignedIdentities": {
-					"[format('{0}', resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('userIdentity')))]": {}
+					"[resourceID('Microsoft.ManagedIdentity/userAssignedIdentities/',variables('userIdentity'))]": {}
 				}
 			},
-			"kind": "AzureCLI",
+			"dependsOn": [
+				"[variables('nicName')]",
+				"[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('userIdentity'))]"
+			],
 			"properties": {
-				"forceUpdateTag": "[parameters('utcValue')]",
-				"azCliVersion": "2.8.0",
-				"timeout": "PT30M",
-				"scriptContent": "account=$(az account show -o json);tenantId=$(echo $account | jq -r '.tenantId');upn=$(echo $account | jq -r '.user.name');adUser=$(az ad user show --id $upn -o json);objectId=$(echo $adUser | jq -r '.id'); jq -n --arg objectId $objectId --arg tenantId $tenantId '{objectId:$objectId,tenantId:$tenantId}'> $AZ_SCRIPTS_OUTPUT_PATH;",
-				"cleanupPreference": "OnSuccess",
-				"retentionInterval": "P1D"
+				"hardwareProfile": {
+					"vmSize": "[parameters('vmSize')]"
+				},
+				"osProfile": {
+					"computerName": "[variables('vmName')]",
+					"adminUsername": "[parameters('adminUsername')]",
+					"adminPassword": "[parameters('adminPassword')]"
+				},
+				"storageProfile": {
+					"imageReference": {
+						"publisher": "MicrosoftWindowsServer",
+						"offer": "WindowsServer",
+						"sku": "2019-Datacenter",
+						"version": "latest"
+					},
+					"osDisk": {
+						"createOption": "FromImage",
+						"managedDisk": {
+							"storageAccountType": "StandardSSD_LRS"
+						},
+						"diskSizeGB": 127,
+						"name": "primaryOsDisk"
+					}
+				},
+				"networkProfile": {
+					"networkInterfaces": [
+						{
+							"id": "[resourceId('Microsoft.Network/networkInterfaces',variables('nicName'))]"
+						}
+					]
+				},
+				"diagnosticsProfile": {
+					"bootDiagnostics": {
+						"enabled": true,
+						"storageUri": "[concat('https://', parameters('storageUri'), '.blob.core.windows.net')]"
+					}
+				}
 			}
 		},
+		// {
+		// 	"type": "Microsoft.Resources/deploymentScripts",
+		// 	"apiVersion": "2020-10-01",
+		// 	"name": "getAADInfo",
+		// 	"location": "[parameters('location')]",
+		// 	"dependsOn": [
+		// 		"[resourceId('Microsoft.Authorization/roleAssignments', variables('bootstrapRoleAssignmentId'))]",
+		// 		"[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('userIdentity'))]"
+		// 	],
+		// 	"identity": {
+		// 		"type": "UserAssigned",
+		// 		"userAssignedIdentities": {
+		// 			"[format('{0}', resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('userIdentity')))]": {}
+		// 		}
+		// 	},
+		// 	"kind": "AzureCLI",
+		// 	"properties": {
+		// 		"forceUpdateTag": "[parameters('utcValue')]",
+		// 		"azCliVersion": "2.8.0",
+		// 		"timeout": "PT30M",
+		// 		"scriptContent": "account=$(az account show -o json);tenantId=$(echo $account | jq -r '.tenantId');upn=$(echo $account | jq -r '.user.name');adUser=$(az ad user show --id $upn -o json);objectId=$(echo $adUser | jq -r '.id'); jq -n --arg objectId $objectId --arg tenantId $tenantId '{objectId:$objectId,tenantId:$tenantId}'> $AZ_SCRIPTS_OUTPUT_PATH;",
+		// 		"cleanupPreference": "OnSuccess",
+		// 		"retentionInterval": "P1D"
+		// 	}
+		// },
 		{
 			"type": "Microsoft.KeyVault/vaults",
 			"name": "[parameters('keyVaultName')]",
 			"apiVersion": "2015-06-01",
 			"location": "[resourceGroup().location]",
 			"dependsOn": [
-				"[resourceId('Microsoft.Resources/deploymentScripts', 'getAADInfo')]"
+				// "[resourceId('Microsoft.Resources/deploymentScripts', 'getAADInfo')]"
 			],
 			"properties": {
 				"enabledForDeployment": "[parameters('enabledForDeployment')]",
 				"enabledForTemplateDeployment": "[parameters('enabledForTemplateDeployment')]",
 				"enabledForVolumeEncryption": "[parameters('enableVaultForVolumeEncryption')]",
-				"tenantId": "[reference('getAADInfo').outputs.tenantId]",
+				"tenantId": "[reference(concat('Microsoft.Compute/virtualMachines/', variables('vmName')), '2017-03-30', 'Full').identity.tenantId]",
 				"accessPolicies": [
 					{
-						"tenantId": "[reference('getAADInfo').outputs.tenantId]",
-						"objectId": "[reference('getAADInfo').outputs.objectId]",
+						"tenantId": "[reference(concat('Microsoft.Compute/virtualMachines/', variables('vmName')), '2017-03-30', 'Full').identity.tenantId]",
+						"objectId": "[reference(concat('Microsoft.Compute/virtualMachines/', variables('vmName')), '2017-03-30', 'Full').identity.principalId]",
 						"permissions": {
 							"keys": "[parameters('keysPermissions')]",
 							"secrets": "[parameters('secretsPermissions')]"
