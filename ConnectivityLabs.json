@@ -253,8 +253,7 @@
 			},
 			"location": "[parameters('location')]",
 			"dependsOn": [
-				"nicCopy",
-				"windowsVMcopy"
+				"nicCopy"
 			],
 			"properties": {
 				"hardwareProfile": {
