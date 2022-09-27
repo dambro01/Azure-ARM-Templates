@@ -12,16 +12,17 @@
 	"parameters": {
 		"adminUsername": {
 			"type": "String",
+			"defaultValue": "azureadmin",
 			"maxLength": 20,
 			"metadata": {
-				"description": "Username for the Virtual Machine."
+				"description": "Username for the Virtual Machines."
 			}
 		},
 		"adminPassword": {
 			"type": "SecureString",
 			"minLength": 12,
 			"metadata": {
-				"description": "Password for the Virtual Machine."
+				"description": "Password for the Virtual Machines."
 			}
 		},
 		"location": {
@@ -32,17 +33,10 @@
 			}
 		},
 		"vmSize": {
-			"defaultValue": "Standard_D2_v3",
+			"defaultValue": "Standard_B2ms",
 			"type": "String",
 			"metadata": {
-				"description": "Default VM Size"
-			}
-		},
-		"dnsNameForPublicIP": {
-			"defaultValue": "[tolower(concat('dns', uniquestring(resourceGroup().id)))]",
-			"type": "String",
-			"metadata": {
-				"description": "DNS name for the public IP"
+				"description": "Default VM Size."
 			}
 		},
 		"storageUri": {
@@ -66,22 +60,26 @@
 		"subnetName": "Subnet",
 		"subnetPrefix": "10.0.0.0/24",
 		"subnetRef": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworkName'), variables('subnetName'))]",
-		"vmName": "TermService",
+		"windowsVMName": "WindowsLab",
+		"linuxVMName": "LinuxLab",
 		"virtualNetworkName": "MyVNET",
 		"publicIPAddressName": "myPublicIP",
-		"networkSecurityGroupName": "default-NSG"
+		"networkSecurityGroupName": "default-NSG",
+		"windowsVMCount": 16,
+		"linuxVMCount": 4
 	},
 	"resources": [
 		{
 			"type": "Microsoft.Network/publicIPAddresses",
 			"apiVersion": "2020-08-01",
-			"name": "[variables('publicIPAddressName')]",
+			"name": "[concat(variables('publicIPAddressName'), copyIndex())]",
+			"copy": {
+				"name": "publicIPcopy",
+				"count": "[add(variables('windowsVMCount'),variables('linuxVMCount'))]"
+			},
 			"location": "[parameters('location')]",
 			"properties": {
-				"publicIPAllocationMethod": "Dynamic",
-				"dnsSettings": {
-					"domainNameLabel": "[parameters('dnsNameForPublicIP')]"
-				}
+				"publicIPAllocationMethod": "Dynamic"
 			}
 		},
 		{
@@ -137,10 +135,14 @@
 		{
 			"type": "Microsoft.Network/networkInterfaces",
 			"apiVersion": "2020-08-01",
-			"name": "[variables('nicName')]",
+			"name": "[concat(variables('nicName'), copyIndex())]",
+			"copy": {
+				"count": "[add(variables('windowsVMCount'),variables('linuxVMCount'))]",
+				"name": "nicCopy"
+			},
 			"location": "[parameters('location')]",
 			"dependsOn": [
-				"[variables('publicIPAddressName')]",
+				"publicIPcopy",
 				"[variables('virtualNetworkName')]"
 			],
 			"properties": {
@@ -150,7 +152,7 @@
 						"properties": {
 							"privateIPAllocationMethod": "Dynamic",
 							"publicIPAddress": {
-								"id": "[resourceId('Microsoft.Network/publicIPAddresses',variables('publicIPAddressName'))]"
+								"id": "[resourceId('Microsoft.Network/publicIPAddresses',concat(variables('publicIPAddressName'), copyIndex()))]"
 							},
 							"subnet": {
 								"id": "[variables('subnetRef')]"
@@ -173,18 +175,22 @@
 		},
 		{
 			"type": "Microsoft.Compute/virtualMachines",
+			"name": "[concat(variables('windowsVMName'), copyIndex())]",
 			"apiVersion": "2020-12-01",
-			"name": "[variables('vmName')]",
+			"copy": {
+				"count": "[variables('windowsVMCount')]",
+				"name": "windowsVMcopy"
+			},
 			"location": "[parameters('location')]",
 			"dependsOn": [
-				"[variables('nicName')]"
+				"nicCopy"
 			],
 			"properties": {
 				"hardwareProfile": {
 					"vmSize": "[parameters('vmSize')]"
 				},
 				"osProfile": {
-					"computerName": "[variables('vmName')]",
+					"computerName": "[concat(variables('windowsVMName'), copyIndex())]",
 					"adminUsername": "[parameters('adminUsername')]",
 					"adminPassword": "[parameters('adminPassword')]"
 				},
@@ -205,7 +211,7 @@
 				"networkProfile": {
 					"networkInterfaces": [
 						{
-							"id": "[resourceId('Microsoft.Network/networkInterfaces',variables('nicName'))]"
+							"id": "[resourceId('Microsoft.Network/networkInterfaces', concat(variables('nicName'), copyIndex()))]"
 						}
 					]
 				},
@@ -215,33 +221,78 @@
 						"storageUri": "[concat('https://', parameters('storageUri'), '.blob.core.windows.net')]"
 					}
 				}
+				// },
+				// "resources": [
+				// {
+				// 	"type": "extensions",
+				// 	"apiVersion": "2020-12-01",
+				// 	"name": "CustomScriptExtension",
+				// 	"location": "[parameters('location')]",
+				// 	"dependsOn": [
+				// 		"[variables('vmName')]"
+				// 	],
+				// 	"properties": {
+				// 		"publisher": "Microsoft.Compute",
+				// 		"type": "CustomScriptExtension",
+				// 		"typeHandlerVersion": "1.8",
+				// 		"autoUpgradeMinorVersion": true,
+				// 		"settings": {
+				// 			"commandToExecute": "powershell Set-ItemProperty -Path 'HKLM:\\SYSTEM\\CurrentControlSet\\Services\\TermService\\Parameters' -name 'ServiceDll' '%SystemRoot%\\System32\\rdp.dll' -Type ExpandString; powershell Restart-Computer -Force"
+				// 		}
+				// 	}
+			}
+			// ]
+		},
+		{
+			"type": "Microsoft.Compute/virtualMachines",
+			"apiVersion": "2020-12-01",
+			"name": "[concat(variables('linuxVMName'), copyIndex())]",
+			"copy": {
+				"count": "[variables('linuxVMCount')]",
+				"name": "linuxVMcopy"
 			},
-			"resources": [
-				{
-					"type": "extensions",
-					"apiVersion": "2020-12-01",
-					"name": "CustomScriptExtension",
-					"location": "[parameters('location')]",
-					"dependsOn": [
-						"[variables('vmName')]"
-					],
-					"properties": {
-						"publisher": "Microsoft.Compute",
-						"type": "CustomScriptExtension",
-						"typeHandlerVersion": "1.8",
-						"autoUpgradeMinorVersion": true,
-						"settings": {
-							"commandToExecute": "powershell Set-ItemProperty -Path 'HKLM:\\SYSTEM\\CurrentControlSet\\Services\\TermService\\Parameters' -name 'ServiceDll' '%SystemRoot%\\System32\\rdp.dll' -Type ExpandString; powershell Restart-Computer -Force"
+			"location": "[parameters('location')]",
+			"dependsOn": [
+				"nicCopy",
+				"windowsVMcopy"
+			],
+			"properties": {
+				"hardwareProfile": {
+					"vmSize": "[parameters('vmSize')]"
+				},
+				"osProfile": {
+					"computerName": "[concat(variables('linuxVMName'), copyIndex())]",
+					"adminUsername": "[parameters('adminUsername')]",
+					"adminPassword": "[parameters('adminPassword')]"
+				},
+				"storageProfile": {
+					"imageReference": {
+						"publisher": "RedHat",
+						"offer": "rhel-raw",
+						"sku": "8-raw",
+						"version": "latest"
+					},
+					"osDisk": {
+						"createOption": "FromImage",
+						"managedDisk": {
+							"storageAccountType": "StandardSSD_LRS"
 						}
 					}
+				},
+				"networkProfile": {
+					"networkInterfaces": [
+						{
+							"id": "[resourceId('Microsoft.Network/networkInterfaces', concat(variables('nicName'), copyIndex(variables('windowsVMCount'))))]"
+						}
+					]
+				},
+				"diagnosticsProfile": {
+					"bootDiagnostics": {
+						"enabled": true,
+						"storageUri": "[concat('https://', parameters('storageUri'), '.blob.core.windows.net')]"
+					}
 				}
-			]
+			}
 		}
-	],
-	"outputs": {
-		"vm-fqdn": {
-			"type": "String",
-			"value": "[reference(variables('publicIPAddressName'), '2020-07-01').dnsSettings.fqdn]"
-		}
-	}
+	]
 }
