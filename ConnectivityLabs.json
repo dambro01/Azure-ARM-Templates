@@ -221,27 +221,7 @@
 						"storageUri": "[concat('https://', parameters('storageUri'), '.blob.core.windows.net')]"
 					}
 				}
-				// },
-				// "resources": [
-				// {
-				// 	"type": "extensions",
-				// 	"apiVersion": "2020-12-01",
-				// 	"name": "CustomScriptExtension",
-				// 	"location": "[parameters('location')]",
-				// 	"dependsOn": [
-				// 		"[variables('vmName')]"
-				// 	],
-				// 	"properties": {
-				// 		"publisher": "Microsoft.Compute",
-				// 		"type": "CustomScriptExtension",
-				// 		"typeHandlerVersion": "1.8",
-				// 		"autoUpgradeMinorVersion": true,
-				// 		"settings": {
-				// 			"commandToExecute": "powershell Set-ItemProperty -Path 'HKLM:\\SYSTEM\\CurrentControlSet\\Services\\TermService\\Parameters' -name 'ServiceDll' '%SystemRoot%\\System32\\rdp.dll' -Type ExpandString; powershell Restart-Computer -Force"
-				// 		}
-				// 	}
 			}
-			// ]
 		},
 		{
 			"type": "Microsoft.Compute/virtualMachines",
@@ -291,6 +271,246 @@
 						"storageUri": "[concat('https://', parameters('storageUri'), '.blob.core.windows.net')]"
 					}
 				}
+			}
+		},
+		{
+			"type": "Microsoft.Compute/virtualMachines/runCommands",
+			"apiVersion": "2021-11-01",
+			"name": "[concat(variables('windowsVMName'), '0', '/injectRunCommand')]",
+			"location": "[resourceGroup().location]",
+			"dependsOn": [
+				"[concat(resourceId('Microsoft.Compute/virtualMachines', variables('windowsVMName')),'0')]"
+			],
+			"properties": {
+				"source": {
+					"script": "Start-Process powershell -Verb runAs -ArgumentList {& \"$env:windir\\system32\\sysprep\\Sysprep.exe\" /generalize /reboot /oobe;}"
+				},
+				"timeoutInSeconds": 60
+			}
+		},
+		{
+			"type": "Microsoft.Compute/virtualMachines/runCommands",
+			"apiVersion": "2021-11-01",
+			"name": "[concat(variables('windowsVMName'), '1', '/injectRunCommand')]",
+			"location": "[resourceGroup().location]",
+			"dependsOn": [
+				"[concat(resourceId('Microsoft.Compute/virtualMachines', variables('windowsVMName')),'1')]"
+			],
+			"properties": {
+				"source": {
+					"script": "Start-Process powershell -Verb runAs -ArgumentList {bcdedit /delete '{bootmgr}' /f; Restart-Computer -Force}"
+				},
+				"timeoutInSeconds": 60
+			}
+		},
+		{
+			"type": "Microsoft.Compute/virtualMachines/runCommands",
+			"apiVersion": "2021-11-01",
+			"name": "[concat(variables('windowsVMName'), '2', '/injectRunCommand')]",
+			"location": "[resourceGroup().location]",
+			"dependsOn": [
+				"[concat(resourceId('Microsoft.Compute/virtualMachines', variables('windowsVMName')),'2')]"
+			],
+			"properties": {
+				"source": {
+					"script": "Start-Process powershell -Verb runAs -ArgumentList {bcdedit /delete '{current}' /f; Restart-Computer -Force}"
+				},
+				"timeoutInSeconds": 60
+			}
+		},
+		{
+			"type": "Microsoft.Compute/virtualMachines/runCommands",
+			"apiVersion": "2021-11-01",
+			"name": "[concat(variables('windowsVMName'), '3', '/injectRunCommand')]",
+			"location": "[resourceGroup().location]",
+			"dependsOn": [
+				"[concat(resourceId('Microsoft.Compute/virtualMachines', variables('windowsVMName')),'3')]"
+			],
+			"properties": {
+				"source": {
+					"script": "Start-Process powershell -Verb runAs -ArgumentList {}"
+				},
+				"timeoutInSeconds": 60
+			}
+		},
+		{
+			"type": "Microsoft.Compute/virtualMachines/runCommands",
+			"apiVersion": "2021-11-01",
+			"name": "[concat(variables('windowsVMName'), '4', '/injectRunCommand')]",
+			"location": "[resourceGroup().location]",
+			"dependsOn": [
+				"[concat(resourceId('Microsoft.Compute/virtualMachines', variables('windowsVMName')),'4')]"
+			],
+			"properties": {
+				"source": {
+					"script": "Start-Process powershell -Verb runAs -ArgumentList {}"
+				},
+				"timeoutInSeconds": 60
+			}
+		},
+		{
+			"type": "Microsoft.Compute/virtualMachines/runCommands",
+			"apiVersion": "2021-11-01",
+			"name": "[concat(variables('windowsVMName'), '5', '/injectRunCommand')]",
+			"location": "[resourceGroup().location]",
+			"dependsOn": [
+				"[concat(resourceId('Microsoft.Compute/virtualMachines', variables('windowsVMName')),'5')]"
+			],
+			"properties": {
+				"source": {
+					"script": "Start-Process powershell -Verb runAs -ArgumentList {}"
+				},
+				"timeoutInSeconds": 60
+			}
+		},
+		{
+			"type": "Microsoft.Compute/virtualMachines/runCommands",
+			"apiVersion": "2021-11-01",
+			"name": "[concat(variables('windowsVMName'), '6', '/injectRunCommand')]",
+			"location": "[resourceGroup().location]",
+			"dependsOn": [
+				"[concat(resourceId('Microsoft.Compute/virtualMachines', variables('windowsVMName')),'6')]"
+			],
+			"properties": {
+				"source": {
+					"script": "Start-Process powershell -Verb runAs -ArgumentList {}"
+				},
+				"timeoutInSeconds": 60
+			}
+		},
+		{
+			"type": "Microsoft.Compute/virtualMachines/runCommands",
+			"apiVersion": "2021-11-01",
+			"name": "[concat(variables('windowsVMName'), '7', '/injectRunCommand')]",
+			"location": "[resourceGroup().location]",
+			"dependsOn": [
+				"[concat(resourceId('Microsoft.Compute/virtualMachines', variables('windowsVMName')),'7')]"
+			],
+			"properties": {
+				"source": {
+					"script": "Start-Process powershell -Verb runAs -ArgumentList {}"
+				},
+				"timeoutInSeconds": 60
+			}
+		},
+		{
+			"type": "Microsoft.Compute/virtualMachines/runCommands",
+			"apiVersion": "2021-11-01",
+			"name": "[concat(variables('windowsVMName'), '8', '/injectRunCommand')]",
+			"location": "[resourceGroup().location]",
+			"dependsOn": [
+				"[concat(resourceId('Microsoft.Compute/virtualMachines', variables('windowsVMName')),'8')]"
+			],
+			"properties": {
+				"source": {
+					"script": "Start-Process powershell -Verb runAs -ArgumentList {}"
+				},
+				"timeoutInSeconds": 60
+			}
+		},
+		{
+			"type": "Microsoft.Compute/virtualMachines/runCommands",
+			"apiVersion": "2021-11-01",
+			"name": "[concat(variables('windowsVMName'), '9', '/injectRunCommand')]",
+			"location": "[resourceGroup().location]",
+			"dependsOn": [
+				"[concat(resourceId('Microsoft.Compute/virtualMachines', variables('windowsVMName')),'9')]"
+			],
+			"properties": {
+				"source": {
+					"script": "Start-Process powershell -Verb runAs -ArgumentList {}"
+				},
+				"timeoutInSeconds": 60
+			}
+		},
+		{
+			"type": "Microsoft.Compute/virtualMachines/runCommands",
+			"apiVersion": "2021-11-01",
+			"name": "[concat(variables('windowsVMName'), '10', '/injectRunCommand')]",
+			"location": "[resourceGroup().location]",
+			"dependsOn": [
+				"[concat(resourceId('Microsoft.Compute/virtualMachines', variables('windowsVMName')),'10')]"
+			],
+			"properties": {
+				"source": {
+					"script": "Start-Process powershell -Verb runAs -ArgumentList {}"
+				},
+				"timeoutInSeconds": 60
+			}
+		},
+		{
+			"type": "Microsoft.Compute/virtualMachines/runCommands",
+			"apiVersion": "2021-11-01",
+			"name": "[concat(variables('windowsVMName'), '11', '/injectRunCommand')]",
+			"location": "[resourceGroup().location]",
+			"dependsOn": [
+				"[concat(resourceId('Microsoft.Compute/virtualMachines', variables('windowsVMName')),'11')]"
+			],
+			"properties": {
+				"source": {
+					"script": "Start-Process powershell -Verb runAs -ArgumentList {}"
+				},
+				"timeoutInSeconds": 60
+			}
+		},
+		{
+			"type": "Microsoft.Compute/virtualMachines/runCommands",
+			"apiVersion": "2021-11-01",
+			"name": "[concat(variables('windowsVMName'), '12', '/injectRunCommand')]",
+			"location": "[resourceGroup().location]",
+			"dependsOn": [
+				"[concat(resourceId('Microsoft.Compute/virtualMachines', variables('windowsVMName')),'12')]"
+			],
+			"properties": {
+				"source": {
+					"script": "Start-Process powershell -Verb runAs -ArgumentList {}"
+				},
+				"timeoutInSeconds": 60
+			}
+		},
+		{
+			"type": "Microsoft.Compute/virtualMachines/runCommands",
+			"apiVersion": "2021-11-01",
+			"name": "[concat(variables('windowsVMName'), '13', '/injectRunCommand')]",
+			"location": "[resourceGroup().location]",
+			"dependsOn": [
+				"[concat(resourceId('Microsoft.Compute/virtualMachines', variables('windowsVMName')),'13')]"
+			],
+			"properties": {
+				"source": {
+					"script": "Start-Process powershell -Verb runAs -ArgumentList {}"
+				},
+				"timeoutInSeconds": 60
+			}
+		},
+		{
+			"type": "Microsoft.Compute/virtualMachines/runCommands",
+			"apiVersion": "2021-11-01",
+			"name": "[concat(variables('windowsVMName'), '14', '/injectRunCommand')]",
+			"location": "[resourceGroup().location]",
+			"dependsOn": [
+				"[concat(resourceId('Microsoft.Compute/virtualMachines', variables('windowsVMName')),'14')]"
+			],
+			"properties": {
+				"source": {
+					"script": "Start-Process powershell -Verb runAs -ArgumentList {}"
+				},
+				"timeoutInSeconds": 60
+			}
+		},
+		{
+			"type": "Microsoft.Compute/virtualMachines/runCommands",
+			"apiVersion": "2021-11-01",
+			"name": "[concat(variables('windowsVMName'), '15', '/injectRunCommand')]",
+			"location": "[resourceGroup().location]",
+			"dependsOn": [
+				"[concat(resourceId('Microsoft.Compute/virtualMachines', variables('windowsVMName')),'15')]"
+			],
+			"properties": {
+				"source": {
+					"script": "Start-Process powershell -Verb runAs -ArgumentList {}"
+				},
+				"timeoutInSeconds": 60
 			}
 		}
 	]
