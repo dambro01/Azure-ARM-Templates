@@ -1,0 +1,10 @@
+{
+	"recommendations": [
+		"shakram02.bash-beautify",
+		"usernamehw.errorlens",
+		"esbenp.prettier-vscode",
+		"foxundermoon.shell-format",
+		"timonwong.shellcheck",
+		"yzhang.markdown-all-in-one"
+	]
+}

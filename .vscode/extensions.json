@@ -5,6 +5,12 @@
 		"msazurermtools.azurerm-vscode-tools",
 		"ms-azuretools.vscode-azureresourcegroups",
 		"formulahendry.azure-virtual-machine-explorer",
-		"ms-azuretools.vscode-azurevirtualmachines"
+		"ms-azuretools.vscode-azurevirtualmachines",
+		"shakram02.bash-beautify",
+		"usernamehw.errorlens",
+		"esbenp.prettier-vscode",
+		"foxundermoon.shell-format",
+		"timonwong.shellcheck",
+		"yzhang.markdown-all-in-one"
 	]
 }
