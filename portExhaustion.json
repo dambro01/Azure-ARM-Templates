@@ -346,7 +346,7 @@
 			],
 			"properties": {
 				"source": {
-					"script": "[concat('[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::TLS12;(New-Object System.Net.WebClient).DownloadFile(''https://github.com/rjmccallumbigl/PowerShell-break-Azure-VMs/raw/main/TcpRepeater.exe'', ''C:\\Program Files\\Common Files\\TcpRepeater.exe''); Start-Process powershell -Verb runAs -ArgumentList {& ''C:\\Program Files\\Common Files\\TcpRepeater.exe'' Server }')]"
+					"script": "[concat('[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::TLS12;(New-Object System.Net.WebClient).DownloadFile(''https://github.com/rjmccallumbigl/Azure-ARM-Templates/raw/main/Scripts/TcpRepeater.exe'', ''C:\\Program Files\\Common Files\\TcpRepeater.exe''); Start-Process powershell -Verb runAs -ArgumentList {& ''C:\\Program Files\\Common Files\\TcpRepeater.exe'' Server }')]"
 				},
 				"timeoutInSeconds": 60
 			}
@@ -361,7 +361,7 @@
 			],
 			"properties": {
 				"source": {
-					"script": "[concat('[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::TLS12;(New-Object System.Net.WebClient).DownloadFile(''https://github.com/rjmccallumbigl/PowerShell-break-Azure-VMs/raw/main/TcpRepeaterMClient.exe'', ''C:\\Program Files\\Common Files\\TcpRepeaterMClient.exe''); netsh int ipv4 set dynamicport tcp start=1025 num=1030; netsh int ipv4 set dynamicport udp start=1025 num=1030; netsh int ipv6 set dynamicport tcp start=1025 num=1030; netsh int ipv6 set dynamicport ucp start=1025 num=1030; Start-Process powershell -Verb runAs -ArgumentList {& ''C:\\Program Files\\Common Files\\TcpRepeaterMClient.exe'' DC1 999999999 }')]"
+					"script": "[concat('[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::TLS12;(New-Object System.Net.WebClient).DownloadFile(''https://github.com/rjmccallumbigl/Azure-ARM-Templates/raw/main/Scripts/TcpRepeaterMClient.exe'', ''C:\\Program Files\\Common Files\\TcpRepeaterMClient.exe''); netsh int ipv4 set dynamicport tcp start=1025 num=1030; netsh int ipv4 set dynamicport udp start=1025 num=1030; netsh int ipv6 set dynamicport tcp start=1025 num=1030; netsh int ipv6 set dynamicport ucp start=1025 num=1030; Start-Process powershell -Verb runAs -ArgumentList {& ''C:\\Program Files\\Common Files\\TcpRepeaterMClient.exe'' DC1 999999999 }')]"
 				},
 				"timeoutInSeconds": 60
 			}
