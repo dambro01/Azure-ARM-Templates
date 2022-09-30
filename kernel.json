@@ -233,7 +233,7 @@
 				"protectedSettings": {
 					"commandToExecute": "sudo sh updateKernel.sh",
 					"fileUris": [
-						"https://raw.githubusercontent.com/rjmccallumbigl/PowerShell-break-Azure-VMs/main/updateKernel.sh"
+						"https://raw.githubusercontent.com/rjmccallumbigl/Azure-ARM-Templates/main/Scripts/updateKernel.sh"
 					]
 				}
 			}

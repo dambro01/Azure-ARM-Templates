@@ -233,7 +233,7 @@
 				"protectedSettings": {
 					"commandToExecute": "sudo sh benchmarkCPU.sh",
 					"fileUris": [
-						"https://raw.githubusercontent.com/rjmccallumbigl/PowerShell-break-Azure-VMs/main/benchmarkCPU.sh"
+						"https://raw.githubusercontent.com/rjmccallumbigl/Azure-ARM-Templates/main/Scripts/benchmarkCPU.sh"
 					]
 				}
 			}

@@ -233,7 +233,7 @@
 				"protectedSettings": {
 					"commandToExecute": "sudo sh benchmarkDisks.sh",
 					"fileUris": [
-						"https://raw.githubusercontent.com/rjmccallumbigl/PowerShell-break-Azure-VMs/main/benchmarkDisks.sh"
+						"https://raw.githubusercontent.com/rjmccallumbigl/Azure-ARM-Templates/main/Scripts/benchmarkDisks.sh"
 					]
 				}
 			}

@@ -233,7 +233,7 @@
 				"protectedSettings": {
 					"commandToExecute": "sudo sh updateFirewall.sh",
 					"fileUris": [
-						"https://raw.githubusercontent.com/rjmccallumbigl/PowerShell-break-Azure-VMs/main/updateFirewall.sh"
+						"https://raw.githubusercontent.com/rjmccallumbigl/Azure-ARM-Templates/main/Scripts/updateFirewall.sh"
 					]
 				}
 			}

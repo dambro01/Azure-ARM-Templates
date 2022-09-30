@@ -233,7 +233,7 @@
 				"protectedSettings": {
 					"commandToExecute": "sudo sh rupt.sh",
 					"fileUris": [
-						"https://raw.githubusercontent.com/rjmccallumbigl/PowerShell-break-Azure-VMs/main/rupt.sh"
+						"https://raw.githubusercontent.com/rjmccallumbigl/Azure-ARM-Templates/main/Scripts/rupt.sh"
 					]
 				}
 			}

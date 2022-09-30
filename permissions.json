@@ -242,7 +242,7 @@
 				"protectedSettings": {
 					"commandToExecute": "sudo sh wildPermissions.sh",
 					"fileUris": [
-						"https://raw.githubusercontent.com/rjmccallumbigl/PowerShell-break-Azure-VMs/main/wildPermissions.sh"
+						"https://raw.githubusercontent.com/rjmccallumbigl/Azure-ARM-Templates/main/Scripts/wildPermissions.sh"
 					]
 				}
 			}

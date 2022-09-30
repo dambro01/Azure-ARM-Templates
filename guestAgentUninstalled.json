@@ -232,7 +232,7 @@
                         "autoUpgradeMinorVersion": true,
                         "settings": {
                             "fileUris": [
-                                "https://raw.githubusercontent.com/rjmccallumbigl/PowerShell-break-Azure-VMs/main/gaUninstalled.bat"
+                                "https://raw.githubusercontent.com/rjmccallumbigl/Azure-ARM-Templates/main/Scripts/gaUninstalled.bat"
                             ]
                         },
                         "protectedSettings": {

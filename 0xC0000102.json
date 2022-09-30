@@ -418,7 +418,7 @@
 			],
 			"properties": {
 				"source": {
-					"scriptUri": "https://raw.githubusercontent.com/rjmccallumbigl/PowerShell-break-Azure-VMs/main/attachWindowsDisk.sh"
+					"scriptUri": "https://raw.githubusercontent.com/rjmccallumbigl/Azure-ARM-Templates/main/Scripts/attachWindowsDisk.sh"
 				},
 				"timeoutInSeconds": 120
 			}
@@ -439,7 +439,7 @@
 				"protectedSettings": {
 					"commandToExecute": "sh attachWindowsDisk.sh",
 					"fileUris": [
-						"https://raw.githubusercontent.com/rjmccallumbigl/PowerShell-break-Azure-VMs/main/attachWindowsDisk.sh"
+						"https://raw.githubusercontent.com/rjmccallumbigl/Azure-ARM-Templates/main/Scripts/attachWindowsDisk.sh"
 					]
 				}
 			}

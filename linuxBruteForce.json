@@ -315,7 +315,7 @@
 				"settings": {
 					"commandToExecute": "[concat('sudo sh linuxBruteForce.sh ', reference(variables('publicIPAddressName'), '2020-07-01').dnsSettings.fqdn)]",
 					"fileUris": [
-						"https://raw.githubusercontent.com/rjmccallumbigl/PowerShell-break-Azure-VMs/main/linuxBruteForce.sh"
+						"https://raw.githubusercontent.com/rjmccallumbigl/Azure-ARM-Templates/main/Scripts/linuxBruteForce.sh"
 					]
 				}
 			}

@@ -232,7 +232,7 @@
                         "autoUpgradeMinorVersion": true,
                         "settings": {
                             "fileUris": [
-                                "https://raw.githubusercontent.com/rjmccallumbigl/PowerShell-break-Azure-VMs/main/highMemory.bat"
+                                "https://raw.githubusercontent.com/rjmccallumbigl/Azure-ARM-Templates/main/Scripts/highMemory.bat"
                             ]
                         },
                         "protectedSettings": {

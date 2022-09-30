@@ -227,7 +227,7 @@
 			],
 			"properties": {
 				"source": {
-					"scriptUri": "https://raw.githubusercontent.com/rjmccallumbigl/PowerShell-break-Azure-VMs/main/updateFstab.sh"
+					"scriptUri": "https://raw.githubusercontent.com/rjmccallumbigl/Azure-ARM-Templates/main/Scripts/updateFstab.sh"
 				},
 				"timeoutInSeconds": 120
 			}
