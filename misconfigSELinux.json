@@ -7,7 +7,7 @@
 		"alias": "carlossota",
 		"GitHub": "https://github.com/rjmccallumbigl/Azure-ARM-Templates",
 		"Enablement": "https://access.redhat.com/solutions/3628471",
-		"deploymentLink": "https://labbox.azurewebsites.net/api/Labbox?url=https://raw.githubusercontent.com/rjmccallumbigl/Azure-ARM-Templates/main/misconfigSELinu.json"
+		"deploymentLink": "https://labbox.azurewebsites.net/api/Labbox?url=https://raw.githubusercontent.com/rjmccallumbigl/Azure-ARM-Templates/main/misconfigSELinux.json"
 	},
 	"parameters": {
 		"adminUsername": {
