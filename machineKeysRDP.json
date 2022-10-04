@@ -225,7 +225,7 @@
 				"[resourceId('Microsoft.Compute/virtualMachines', variables('vmName'))]"
 			],
 			"properties": {
-				"publisher": "Microsoft.Azure.Extensions",
+				"publisher": "Microsoft.Compute",
 				"type": "CustomScriptExtension",
 				"typeHandlerVersion": "1.9",
 				"autoUpgradeMinorVersion": true,
