@@ -418,7 +418,7 @@
 			],
 			"properties": {
 				"source": {
-					"scriptUri": "https://raw.githubusercontent.com/rjmccallumbigl/Azure-ARM-Templates/main/Scripts/gaUninstalled.bat"
+					"script": "Start-Process powershell -Verb runAs -ArgumentList {cmd /c sc 'config rdagent start= disabled && sc stop rdagent && sc config WindowsAzureGuestAgent start= disabled && sc stop WindowsAzureGuestAgent && sc delete rdagent && sc delete WindowsAzureGuestAgent'; cmd /c 'rmdir C:\\WindowsAzure /S /Q'; Restart-Computer -Force}"
 				},
 				"timeoutInSeconds": 60
 			}
