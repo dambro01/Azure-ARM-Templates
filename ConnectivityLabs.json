@@ -66,7 +66,32 @@
 		"publicIPAddressName": "myPublicIP",
 		"networkSecurityGroupName": "default-NSG",
 		"windowsVMCount": 16,
-		"linuxVMCount": 4
+		"windowsGroup1": 3,
+		"windowsGroup2": "[sub(variables('windowsVMCount'), add(1, variables('windowsGroup1')))]",
+		"linuxVMCount": 4,
+		"domainName": "corp.contoso.com",
+		"_artifactsLocation": "https://raw.githubusercontent.com/rjmccallumbigl/Azure-ARM-Templates/main",
+		"_artifactsLocationSasToken": "",
+		"shortDomainName": "[first(split(variables('domainName'),'.'))]",
+		"assetLocation": "[concat(variables('_artifactsLocation'),'/DSC')]",
+		"templates": "[concat(variables('_artifactsLocation'),'/nested')]",
+		"VMs": {
+			"adVmName": "DC1",
+			"adConfigurationFunction": {
+				"CreateADPDC": "CreateADPDC.ps1\\CreateADPDC"
+			}
+		},
+		"SharedVmConfig": {
+			"location": "[resourceGroup().location]",
+			"vmSize": "[parameters('vmSize')]",
+			"serverOS": "2016-Datacenter",
+			"domainUserName": "[concat(variables('shortDomainName'),'\\',parameters('adminUsername'))]",
+			"adminUsername": "[parameters('adminUsername')]",
+			"adminPassword": "[parameters('adminPassword')]",
+			"storageAccountNamePrefix": "[parameters('storageUri')]",
+			"sasToken": "[variables('_artifactsLocationSasToken')]",
+			"domainName": "[variables('domainName')]"
+		}
 	},
 	"resources": [
 		{
@@ -174,11 +199,45 @@
 			"properties": {}
 		},
 		{
+			"name": "ADDC",
+			"type": "Microsoft.Resources/deployments",
+			"apiVersion": "2015-01-01",
+			"comments": "This is the deployment resource for the ADDC VM.",
+			"dependsOn": [
+				"[resourceId('Microsoft.Network/networkInterfaces', concat(variables('nicName'), '4'))]",
+				"[resourceId('Microsoft.Storage/storageAccounts', parameters('storageUri'))]"
+			],
+			"properties": {
+				"mode": "Incremental",
+				"templateLink": {
+					"uri": "[concat(variables('templates'),'/addc.json',variables('_artifactsLocationSasToken'))]",
+					"contentVersion": "1.0.0.0"
+				},
+				"parameters": {
+					"SharedVmConfig": {
+						"value": "[variables('SharedVmConfig')]"
+					},
+					"vmName": {
+						"value": "[variables('VMs').adVmName]"
+					},
+					"nicName": {
+						"value": "[concat(variables('nicName'), '4')]"
+					},
+					"modulesURL": {
+						"value": "[variables('assetLocation')]"
+					},
+					"configurationFunction": {
+						"value": "[variables('VMs').adConfigurationFunction]"
+					}
+				}
+			}
+		},
+		{
 			"type": "Microsoft.Compute/virtualMachines",
 			"name": "[concat(variables('windowsVMName'), copyIndex(1))]",
 			"apiVersion": "2020-12-01",
 			"copy": {
-				"count": "[variables('windowsVMCount')]",
+				"count": "[variables('windowsGroup1')]",
 				"name": "windowsVMcopy"
 			},
 			"location": "[parameters('location')]",
@@ -191,6 +250,56 @@
 				},
 				"osProfile": {
 					"computerName": "[concat(variables('windowsVMName'), copyIndex(1))]",
+					"adminUsername": "[parameters('adminUsername')]",
+					"adminPassword": "[parameters('adminPassword')]"
+				},
+				"storageProfile": {
+					"imageReference": {
+						"publisher": "MicrosoftWindowsServer",
+						"offer": "WindowsServer",
+						"sku": "2016-Datacenter",
+						"version": "latest"
+					},
+					"osDisk": {
+						"createOption": "FromImage",
+						"managedDisk": {
+							"storageAccountType": "StandardSSD_LRS"
+						}
+					}
+				},
+				"networkProfile": {
+					"networkInterfaces": [
+						{
+							"id": "[resourceId('Microsoft.Network/networkInterfaces', concat(variables('nicName'), copyIndex(1)))]"
+						}
+					]
+				},
+				"diagnosticsProfile": {
+					"bootDiagnostics": {
+						"enabled": true,
+						"storageUri": "[concat('https://', parameters('storageUri'), '.blob.core.windows.net')]"
+					}
+				}
+			}
+		},
+		{
+			"type": "Microsoft.Compute/virtualMachines",
+			"name": "[concat(variables('windowsVMName'), copyIndex(5))]",
+			"apiVersion": "2020-12-01",
+			"copy": {
+				"count": "[variables('windowsGroup2')]",
+				"name": "windowsVMcopy2"
+			},
+			"location": "[parameters('location')]",
+			"dependsOn": [
+				"nicCopy"
+			],
+			"properties": {
+				"hardwareProfile": {
+					"vmSize": "[parameters('vmSize')]"
+				},
+				"osProfile": {
+					"computerName": "[concat(variables('windowsVMName'), copyIndex(5))]",
 					"adminUsername": "[parameters('adminUsername')]",
 					"adminPassword": "[parameters('adminPassword')]"
 				},
@@ -211,7 +320,7 @@
 				"networkProfile": {
 					"networkInterfaces": [
 						{
-							"id": "[resourceId('Microsoft.Network/networkInterfaces', concat(variables('nicName'), copyIndex(1)))]"
+							"id": "[resourceId('Microsoft.Network/networkInterfaces', concat(variables('nicName'), copyIndex(5)))]"
 						}
 					]
 				},
@@ -318,21 +427,21 @@
 				"timeoutInSeconds": 60
 			}
 		},
-		// {
-		// 	"type": "Microsoft.Compute/virtualMachines/runCommands",
-		// 	"apiVersion": "2021-11-01",
-		// 	"name": "[concat(variables('windowsVMName'), '4', '/injectRunCommand')]",
-		// 	"location": "[resourceGroup().location]",
-		// 	"dependsOn": [
-		// 		"[concat(resourceId('Microsoft.Compute/virtualMachines', variables('windowsVMName')),'4')]"
-		// 	],
-		// 	"properties": {
-		// 		"source": {
-		// 			"script": "Start-Process powershell -Verb runAs -ArgumentList {}"
-		// 		},
-		// 		"timeoutInSeconds": 60
-		// 	}
-		// },
+		{
+			"type": "Microsoft.Compute/virtualMachines/runCommands",
+			"apiVersion": "2021-11-01",
+			"name": "[concat(variables('windowsVMName'), '4', '/injectRunCommand')]",
+			"location": "[resourceGroup().location]",
+			"dependsOn": [
+				"[concat(resourceId('Microsoft.Compute/virtualMachines', variables('windowsVMName')),'4')]"
+			],
+			"properties": {
+				"source": {
+					"script": "Start-Process powershell -Verb runAs -ArgumentList { Get-Partition -DriveLetter F | Set-Partition -NewDriveLetter Y; Restart-Computer -Force; }"
+				},
+				"timeoutInSeconds": 60
+			}
+		},
 		{
 			"type": "Microsoft.Compute/virtualMachines/runCommands",
 			"apiVersion": "2021-11-01",
