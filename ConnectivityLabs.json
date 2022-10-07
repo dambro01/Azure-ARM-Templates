@@ -76,7 +76,7 @@
 		"assetLocation": "[concat(variables('_artifactsLocation'),'/DSC')]",
 		"templates": "[concat(variables('_artifactsLocation'),'/nested')]",
 		"VMs": {
-			"adVmName": "DC1",
+			"adVmName": "[concat(variables('windowsVMName'), '4')]",
 			"adConfigurationFunction": {
 				"CreateADPDC": "CreateADPDC.ps1\\CreateADPDC"
 			}
