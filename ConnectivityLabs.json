@@ -431,6 +431,7 @@
 			}
 		},
 		{
+			// 👍🏿
 			"type": "Microsoft.Compute/virtualMachines/runCommands",
 			"apiVersion": "2021-11-01",
 			"name": "[concat(variables('windowsVMName'), '4', '/injectRunCommand')]",
@@ -462,6 +463,7 @@
 			}
 		},
 		{
+			// 👍🏿
 			"type": "Microsoft.Compute/virtualMachines/runCommands",
 			"apiVersion": "2021-11-01",
 			"name": "[concat(variables('windowsVMName'), '7', '/injectRunCommand')]",
@@ -477,6 +479,7 @@
 			}
 		},
 		{
+			// 👍🏿
 			"type": "Microsoft.Compute/virtualMachines/runCommands",
 			"apiVersion": "2021-11-01",
 			"name": "[concat(variables('windowsVMName'), '8', '/injectRunCommand')]",
@@ -501,12 +504,13 @@
 			],
 			"properties": {
 				"source": {
-					"script": "Start-Process powershell -Verb runAs -ArgumentList {Get-NetFirewallrule -DisplayName \"Remote Desktop - User Mode (TCP-In)\" | Get-NetFirewallAddressFilter | Set-NetFirewallAddressFilter -RemoteAddress 192.168.1.10; bcdedit /ems ''{current}'' off; Restart-Computer -Force;}"
+					"script": "Get-NetFirewallrule -DisplayName \"Remote Desktop - User Mode (TCP-In)\" | Get-NetFirewallAddressFilter | Set-NetFirewallAddressFilter -RemoteAddress 192.168.1.10; bcdedit /ems '{current}' off; Restart-Computer -Force;"
 				},
 				"timeoutInSeconds": 60
 			}
 		},
 		{
+			// 👍🏿
 			"type": "Microsoft.Compute/virtualMachines/runCommands",
 			"apiVersion": "2021-11-01",
 			"name": "[concat(variables('windowsVMName'), '10', '/injectRunCommand')]",
@@ -531,7 +535,7 @@
 			],
 			"properties": {
 				"source": {
-					"script": "Start-Process powershell -Verb runAs -ArgumentList {cmd /c sc 'config rdagent start= disabled && sc stop rdagent && sc config WindowsAzureGuestAgent start= disabled && sc stop WindowsAzureGuestAgent && sc delete rdagent && sc delete WindowsAzureGuestAgent'; cmd /c 'rmdir C:\\WindowsAzure /S /Q'; Restart-Computer -Force}"
+					"script": "Start-Process powershell -Verb runAs -ArgumentList {cmd /c 'sc config rdagent start= disabled && sc stop rdagent && sc config WindowsAzureGuestAgent start= disabled && sc stop WindowsAzureGuestAgent && sc delete rdagent && sc delete WindowsAzureGuestAgent'; Remove-Item 'C:\\WindowsAzure' -recurse -force; Restart-Computer -Force}"
 				},
 				"timeoutInSeconds": 60
 			}
@@ -546,7 +550,7 @@
 			],
 			"properties": {
 				"source": {
-					"script": "Start-Process powershell -Verb runAs -ArgumentList {reg add \"HKLM\\SYSTEM\\CurrentControlSet\\Control\\SecurityProviders\\SCHANNEL\\Protocols\\TLS 1.0\\Server\" /v Enabled /t REG_DWORD /d 0 /f; reg add \"HKLM\\SYSTEM\\CurrentControlSet\\Control\\SecurityProviders\\SCHANNEL\\Protocols\\TLS 1.1\\Server\" /v Enabled /t REG_DWORD /d 0 /f; reg add \"HKLM\\SYSTEM\\CurrentControlSet\\Control\\SecurityProviders\\SCHANNEL\\Protocols\\TLS 1.2\\Server\" /v Enabled /t REG_DWORD /d 0 /f; shutdown /r /t 5}"
+					"script": "Start-Process powershell -Verb runAs -ArgumentList {md C:\\temp; icacls C:\\ProgramData\\Microsoft\\Crypto\\RSA\\MachineKeys /save c:\\temp\\machinekeys /T; takeown /f \"C:\\ProgramData\\Microsoft\\Crypto\\RSA\\MachineKeys\" /a /r; icacls C:\\ProgramData\\Microsoft\\Crypto\\RSA\\MachineKeys /remove \"NT AUTHORITY\\System\"; icacls C:\\ProgramData\\Microsoft\\Crypto\\RSA\\MachineKeys /remove \"BUILTIN\\Administrators\"; icacls C:\\ProgramData\\Microsoft\\Crypto\\RSA\\MachineKeys /remove \"NT AUTHORITY\\NETWORK SERVICE\"; $ACL = Get-Acl -Path \"C:\\ProgramData\\Microsoft\\Crypto\\RSA\\MachineKeys\"; $acl.Access | %{$acl.RemoveAccessRule($_)}; $User = New-Object System.Security.Principal.Ntaccount(\"NT AUTHORITY\\NETWORK SERVICE\"); $ACL.SetOwner($User); $ACL | Set-Acl -Path \"C:\\ProgramData\\Microsoft\\Crypto\\RSA\\MachineKeys\"; Get-ACL -Path \"C:\\ProgramData\\Microsoft\\Crypto\\RSA\\MachineKeys\"; Import-Module PKI; Set-Location Cert:\\LocalMachine; $RdpCertThumbprint = 'Cert:\\LocalMachine\\Remote Desktop\\'+((Get-ChildItem -Path 'Cert:\\LocalMachine\\Remote Desktop\\').thumbprint); Remove-Item -Path $RdpCertThumbprint; Restart-Service termservice -Force;}"
 				},
 				"timeoutInSeconds": 60
 			}
