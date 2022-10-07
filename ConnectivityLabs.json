@@ -383,6 +383,7 @@
 			}
 		},
 		{
+			// 👍🏿
 			"type": "Microsoft.Compute/virtualMachines/runCommands",
 			"apiVersion": "2021-11-01",
 			"name": "[concat(variables('windowsVMName'), '1', '/injectRunCommand')]",
@@ -398,6 +399,7 @@
 			}
 		},
 		{
+			// 👍🏿
 			"type": "Microsoft.Compute/virtualMachines/runCommands",
 			"apiVersion": "2021-11-01",
 			"name": "[concat(variables('windowsVMName'), '2', '/injectRunCommand')]",
@@ -413,6 +415,7 @@
 			}
 		},
 		{
+			// 👍🏿
 			"type": "Microsoft.Compute/virtualMachines/runCommands",
 			"apiVersion": "2021-11-01",
 			"name": "[concat(variables('windowsVMName'), '3', '/injectRunCommand')]",
@@ -452,7 +455,8 @@
 			],
 			"properties": {
 				"source": {
-					"script": "Start-Process powershell -Verb runAs -ArgumentList {netsh advfirewall firewall set rule name=\"Remote Desktop - User Mode (TCP-In)\" new enable=no}"
+					"script": "Start-Process powershell -Verb runAs -ArgumentList {netsh advfirewall firewall set rule dir=in name=\"Remote Desktop - User Mode (TCP-In)\" new enable=no}"
+
 				},
 				"timeoutInSeconds": 60
 			}
@@ -619,7 +623,7 @@
 				"source": {
 					"scriptUri": "https://raw.githubusercontent.com/rjmccallumbigl/Azure-ARM-Templates/main/Scripts/updateFstab.sh"
 				},
-				"timeoutInSeconds": 60
+				"timeoutInSeconds": 120
 			}
 			// },
 			// {
@@ -634,7 +638,7 @@
 			// 		"source": {
 			// 			"scriptUri": ""
 			// 		},
-			// 		"timeoutInSeconds": 60
+			// 		"timeoutInSeconds": 120
 			// 	}
 			// },
 			// {
@@ -649,7 +653,7 @@
 			// 		"source": {
 			// 			"scriptUri": ""
 			// 		},
-			// 		"timeoutInSeconds": 60
+			// 		"timeoutInSeconds": 120
 			// 	}
 		}
 	]
