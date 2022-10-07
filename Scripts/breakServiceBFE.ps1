@@ -18,3 +18,7 @@ $rule1 = New-Object System.Security.AccessControl.RegistryAccessRule ($id1,"Full
 $acl.SetAccessRule($rule)
 $acl.SetAccessRule($rule1)
 $acl | Set-Acl -Path $registry
+
+# Restarts the VM
+
+Restart-Computer -Force
