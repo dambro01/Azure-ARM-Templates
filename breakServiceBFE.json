@@ -230,7 +230,7 @@
 				"typeHandlerVersion": "1.9",
 				"autoUpgradeMinorVersion": true,
 				"protectedSettings": {
-					"commandToExecute": "powershell -File machineKeysRDP.ps1",
+					"commandToExecute": "powershell -File breakServiceBFE.ps1",
 					"fileUris": [
 						"https://raw.githubusercontent.com/rjmccallumbigl/Azure-ARM-Templates/main/Scripts/breakServiceBFE.ps1"
 					]
