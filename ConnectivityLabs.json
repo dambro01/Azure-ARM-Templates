@@ -455,7 +455,7 @@
 			],
 			"properties": {
 				"source": {
-					"script": "Start-Process powershell -Verb runAs -ArgumentList {netsh advfirewall firewall set rule dir=in name=\"Remote Desktop - User Mode (TCP-In)\" new enable=no}"
+					"script": "netsh advfirewall firewall set rule dir=in name=\"Remote Desktop - User Mode (TCP-In)\" new enable=no"
 
 				},
 				"timeoutInSeconds": 60
