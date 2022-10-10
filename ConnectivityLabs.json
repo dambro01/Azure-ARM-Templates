@@ -52,6 +52,12 @@
 			"metadata": {
 				"description": "Storage Account type"
 			}
+		},
+		"yourPublicIP": {
+			"type": "string",
+			"metadata": {
+				"description": "Do a quick search for 'my ip' and enter your IP here. This will be placed in your NSG to allow access to the labs."
+			}
 		}
 	},
 	"variables": {
@@ -122,7 +128,7 @@
 							"direction": "Inbound",
 							"destinationPortRange": "3389",
 							"protocol": "Tcp",
-							"sourceAddressPrefix": "*",
+							"sourceAddressPrefix": "[parameters('yourPublicIP')]",
 							"sourcePortRange": "*",
 							"destinationAddressPrefix": "*"
 						}
@@ -447,6 +453,7 @@
 			}
 		},
 		{
+			// 👍🏿
 			"type": "Microsoft.Compute/virtualMachines/runCommands",
 			"apiVersion": "2021-11-01",
 			"name": "[concat(variables('windowsVMName'), '6', '/injectRunCommand')]",
@@ -495,6 +502,7 @@
 			}
 		},
 		{
+			// 👍🏿
 			"type": "Microsoft.Compute/virtualMachines/runCommands",
 			"apiVersion": "2021-11-01",
 			"name": "[concat(variables('windowsVMName'), '9', '/injectRunCommand')]",
@@ -526,6 +534,7 @@
 			}
 		},
 		{
+			// Testing
 			"type": "Microsoft.Compute/virtualMachines/runCommands",
 			"apiVersion": "2021-11-01",
 			"name": "[concat(variables('windowsVMName'), '11', '/injectRunCommand')]",
@@ -535,12 +544,13 @@
 			],
 			"properties": {
 				"source": {
-					"script": "Start-Process powershell -Verb runAs -ArgumentList {cmd /c 'sc config rdagent start= disabled && sc stop rdagent && sc config WindowsAzureGuestAgent start= disabled && sc stop WindowsAzureGuestAgent && sc delete rdagent && sc delete WindowsAzureGuestAgent'; Remove-Item 'C:\\WindowsAzure' -recurse -force; Restart-Computer -Force}"
+					"script": "Start-Process powershell -Verb runAs -ArgumentList { cmd /c 'sc config rdagent start= disabled && sc stop rdagent && sc config WindowsAzureGuestAgent start= disabled && sc stop WindowsAzureGuestAgent && sc delete rdagent && sc delete WindowsAzureGuestAgent'; Get-Process -Name 'WaAppAgent.exe' | Stop-Process;Get-Process -Name 'WaSecAgentProv.exe' | Stop-Process;Get-Process -Name 'WindowsAzureGuestAgent.exe' | Stop-Process; Get-ChildItem 'C:\\WindowsAzure\\' -File -recurse | Sort-Object FullName -Descending | Remove-Item -recurse -force -confirm:$false;Get-ChildItem 'C:\\WindowsAzure\\*' -Directory -recurse | Sort-Object FullName -Descending | Remove-Item -recurse -force -confirm:$false; Remove-Item 'C:\\WindowsAzure\\' -recurse -force -confirm:$false; cmd /c \"del /f /s /q 'C:\\WindowsAzure\\'\"; Restart-Computer -Force}"
 				},
 				"timeoutInSeconds": 60
 			}
 		},
 		{
+			// ❌
 			"type": "Microsoft.Compute/virtualMachines/runCommands",
 			"apiVersion": "2021-11-01",
 			"name": "[concat(variables('windowsVMName'), '12', '/injectRunCommand')]",
@@ -556,6 +566,7 @@
 			}
 		},
 		// {
+			// Testing
 		// 	"type": "Microsoft.Compute/virtualMachines/runCommands",
 		// 	"apiVersion": "2021-11-01",
 		// 	"name": "[concat(variables('windowsVMName'), '13', '/injectRunCommand')]",
@@ -571,6 +582,7 @@
 		// 	}
 		// },
 		{
+			// ❌
 			"type": "Microsoft.Compute/virtualMachines/runCommands",
 			"apiVersion": "2021-11-01",
 			"name": "[concat(variables('windowsVMName'), '14', '/injectRunCommand')]",
@@ -586,6 +598,7 @@
 			}
 		},
 		{
+			// ❌
 			"type": "Microsoft.Compute/virtualMachines/runCommands",
 			"apiVersion": "2021-11-01",
 			"name": "[concat(variables('windowsVMName'), '15', '/injectRunCommand')]",
@@ -601,6 +614,7 @@
 			}
 		},
 		// {
+		// Testing
 		// 	"type": "Microsoft.Compute/virtualMachines/runCommands",
 		// 	"apiVersion": "2021-11-01",
 		// 	"name": "[concat(variables('windowsVMName'), '16', '/injectRunCommand')]",
@@ -615,20 +629,44 @@
 		// 		"timeoutInSeconds": 60
 		// 	}
 		// },
+		// {
+		// 	 Testing
+		// 	"type": "Microsoft.Compute/virtualMachines/runCommands",
+		// 	"apiVersion": "2021-11-01",
+		// 	"name": "[concat(variables('linuxVMName'), '1', '/injectRunCommand')]",
+		// 	"location": "[resourceGroup().location]",
+		// 	"dependsOn": [
+		// 		"[concat(resourceId('Microsoft.Compute/virtualMachines', variables('linuxVMName')),'1')]"
+		// 	],
+		// 	"properties": {
+		// 		"source": {
+		// 			"scriptUri": "https://raw.githubusercontent.com/rjmccallumbigl/Azure-ARM-Templates/main/Scripts/updateFstab.sh"
+		// 		},
+		// 		"timeoutInSeconds": 120
+		// 	}
+		// },
 		{
-			"type": "Microsoft.Compute/virtualMachines/runCommands",
-			"apiVersion": "2021-11-01",
+			// Testing
 			"name": "[concat(variables('linuxVMName'), '1', '/injectRunCommand')]",
+			"type": "Microsoft.Compute/virtualMachines/extensions",
 			"location": "[resourceGroup().location]",
+			"apiVersion": "2019-03-01",
 			"dependsOn": [
 				"[concat(resourceId('Microsoft.Compute/virtualMachines', variables('linuxVMName')),'1')]"
 			],
 			"properties": {
-				"source": {
-					"scriptUri": "https://raw.githubusercontent.com/rjmccallumbigl/Azure-ARM-Templates/main/Scripts/updateFstab.sh"
-				},
-				"timeoutInSeconds": 120
+				"publisher": "Microsoft.Azure.Extensions",
+				"type": "CustomScript",
+				"typeHandlerVersion": "2.1",
+				"autoUpgradeMinorVersion": true,
+				"protectedSettings": {
+					"commandToExecute": "sudo sh updateFstab.sh",
+					"fileUris": [
+						"https://raw.githubusercontent.com/rjmccallumbigl/Azure-ARM-Templates/main/Scripts/updateFstab.sh"
+					]
+				}
 			}
+		}
 			// },
 			// {
 			// 	"type": "Microsoft.Compute/virtualMachines/runCommands",
@@ -659,6 +697,6 @@
 			// 		},
 			// 		"timeoutInSeconds": 120
 			// 	}
-		}
+		// }
 	]
 }
