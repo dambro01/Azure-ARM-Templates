@@ -580,7 +580,7 @@
 			"location": "[parameters('location')]",
 			"dependsOn": [
 				"[resourceId('Microsoft.Compute/virtualMachines', 'cb-vm')]",
-				"[resourceId('Microsoft.Compute/virtualMachines/extensions/','gw-vm','gateway')]",
+				// "[resourceId('Microsoft.Compute/virtualMachines/extensions/','gw-vm','gateway')]",
 				"rdsh-vm-loop"
 			],
 			"properties": {
