@@ -227,22 +227,7 @@
 			],
 			"properties": {
 				"source": {
-					"script": "cmd /c 'reg add \"HKLM\\SYSTEM\\CurrentControlSet\\Control\\Lsa\" /v LimitBlankPasswordUse /t REG_DWORD /d 0 /f'; Restart-Computer -Force;"
-				},
-				"timeoutInSeconds": 60
-			}
-		},
-		{
-			"type": "Microsoft.Compute/virtualMachines/runCommands",
-			"apiVersion": "2021-11-01",
-			"name": "[concat(variables('vmName'),'/injectScriptWithRunCommand2')]",
-			"location": "[resourceGroup().location]",
-			"dependsOn": [
-				"[resourceId('Microsoft.Compute/virtualMachines/runCommands', variables('vmName'), 'injectScriptWithRunCommand')]"
-			],
-			"properties": {
-				"source": {
-					"script": "[concat('cmd /c ''net user ', parameters('adminUsername') , ' \"\"''; cmd /c ''reg add \"HKLM\\SYSTEM\\CurrentControlSet\\Control\\Lsa\" /v LimitBlankPasswordUse /t REG_DWORD /d 1 /f''; Restart-Computer -Force;')]"
+					"script": "[concat('$securityConfigTemplate = ''C:\\Program Files\\Common Files\\securityconfig.cfg''; $securityConfigTemplate2 = ''C:\\Program Files\\Common Files\\securityconfig2.cfg''; secedit /export /cfg $securityConfigTemplate; ((Get-Content -Path $securityConfigTemplate -Raw).replace(''PasswordComplexity = 1'', ''PasswordComplexity = 0'')).Replace(''ClearTextPassword = 0'', ''ClearTextPassword = 1'') | Set-Content -Path $securityConfigTemplate2;secedit /configure /db C:\\Windows\\security\\new.sdb /cfg $securityConfigTemplate2 /areas SECURITYPOLICY; cmd /c ''net user ', parameters('adminUsername') , ' \"\"'';cmd /c ''reg add \"HKLM\\SYSTEM\\CurrentControlSet\\Control\\Lsa\" /v LimitBlankPasswordUse /t REG_DWORD /d 1 /f''; Restart-Computer -Force;')]"
 				},
 				"timeoutInSeconds": 60
 			}
