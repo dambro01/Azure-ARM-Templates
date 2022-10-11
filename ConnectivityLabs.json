@@ -666,7 +666,7 @@
 					]
 				}
 			}
-		}
+		},
 			// },
 			// {
 			// 	"type": "Microsoft.Compute/virtualMachines/runCommands",
@@ -683,20 +683,27 @@
 			// 		"timeoutInSeconds": 120
 			// 	}
 			// },
-			// {
-			// 	"type": "Microsoft.Compute/virtualMachines/runCommands",
-			// 	"apiVersion": "2021-11-01",
-			// 	"name": "[concat(variables('linuxVMName'), '3', '/injectRunCommand')]",
-			// 	"location": "[resourceGroup().location]",
-			// 	"dependsOn": [
-			// 		"[concat(resourceId('Microsoft.Compute/virtualMachines', variables('linuxVMName')),'3')]"
-			// 	],
-			// 	"properties": {
-			// 		"source": {
-			// 			"scriptUri": ""
-			// 		},
-			// 		"timeoutInSeconds": 120
-			// 	}
-		// }
+		{
+			// Testing
+			"name": "[concat(variables('linuxVMName'), '3', '/injectRunCommand')]",
+			"type": "Microsoft.Compute/virtualMachines/extensions",
+			"location": "[resourceGroup().location]",
+			"apiVersion": "2019-03-01",
+			"dependsOn": [
+				"[concat(resourceId('Microsoft.Compute/virtualMachines', variables('linuxVMName')),'3')]"
+			],
+			"properties": {
+				"publisher": "Microsoft.Azure.Extensions",
+				"type": "CustomScript",
+				"typeHandlerVersion": "2.1",
+				"autoUpgradeMinorVersion": true,
+				"protectedSettings": {
+					"commandToExecute": "sudo sh staticIP.sh",
+					"fileUris": [
+						"https://raw.githubusercontent.com/rjmccallumbigl/Azure-ARM-Templates/main/Scripts/staticIP.sh"
+					]
+				}
+			}
+		}
 	]
 }
