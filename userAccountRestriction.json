@@ -2,7 +2,7 @@
 	"$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
 	"contentVersion": "1.0.0.0",
 	"metadata": {
-		"description": "If you try to RDP to the VM you receive the error 'A user account restriction (for example, a time-of-day restriction) is preventing you from logging on. For assistance, contact your system administrator or technical support.'",
+		"description": "If you try to RDP to the VM with a blank password you receive the error 'A user account restriction (for example, a time-of-day restriction) is preventing you from logging on. For assistance, contact your system administrator or technical support.'",
 		"author": "Ryan McCallum",
 		"alias": "RYMCCALL",
 		"GitHub": "https://github.com/rjmccallumbigl/Azure-ARM-Templates",
