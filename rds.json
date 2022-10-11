@@ -59,13 +59,6 @@
 				"description": "DNS label prefix for public IPs. Must be lowercase and match the regular expression: ^[a-z][a-z0-9-]{1,61}[a-z0-9]$."
 			}
 		},
-		"gwpublicIPAddressName": {
-			"type": "string",
-			"metadata": {
-				"description": "The name of gateway PublicIPAddress object"
-			},
-			"defaultValue": "gwpip"
-		},
 		"_artifactsLocation": {
 			"type": "string",
 			"metadata": {
@@ -341,7 +334,7 @@
 				"networkProfile": {
 					"networkInterfaces": [
 						{
-							"id": "[resourceId('Microsoft.Network/networkInterfaces',parameters('configName'),'-APP_NIC')]"
+							"id": "[resourceId('Microsoft.Network/networkInterfaces', concat(parameters('configName'),'-APP_NIC'))]"
 						}
 					]
 				},
@@ -410,7 +403,8 @@
 						},
 						"connectionBroker": "[concat('broker.',parameters('domainName'))]",
 						"domainName": "[parameters('domainName')]",
-						"externalfqdn": "[reference(parameters('gwpublicIPAddressName')).dnsSettings.fqdn]",
+						"externalfqdn": "[variables('VMs').appPublicIpName.dnsSettings.fqdn]",
+						// "externalfqdn": "[reference(parameters('gwpublicIPAddressName')).dnsSettings.fqdn]",
 						"numberOfRdshInstances": 0,
 						"sessionHostNamingPrefix": "rdsh-",
 						"webAccessServer": "[concat('gateway.',parameters('domainName'))]"
