@@ -416,9 +416,34 @@
 			],
 			"properties": {
 				"source": {
-					"script": "Start-Job { Start-Sleep -seconds 60; $bekVolume = Get-Partition | where { $_.Size -lt 100MB }; $bekVolume | Set-Partition -NewDriveLetter V; $bekArray = Get-ChildItem 'v:\\*.bek' -Force; $bekArray | Rename-Item -NewName { $_.Name -replace '.bek', '.bek.backup'}; Restart-Computer -Force; }"
+					"script": "$bekPartition = Get-Partition | where { $_.Size -lt 100MB }; $bekPartition | Set-Partition -NewDriveLetter V; $bekArray = Get-ChildItem 'v:\\*.bek' -Force; $bekArray | Rename-Item -NewName { $_.Name -replace '.bek', '.bek.backup'};"
 				},
-				"timeoutInSeconds": 120
+				"timeoutInSeconds": 60
+			}
+		},
+		{
+			"type": "Microsoft.Resources/deploymentScripts",
+			"apiVersion": "2020-10-01",
+			"name": "[concat('restartVM')]",
+			"location": "[parameters('location')]",
+			"dependsOn": [
+				"[resourceId('Microsoft.Compute/virtualMachines/runCommands', variables('WindowsVMName'), 'injectRunCommandScript')]"
+			],
+			"identity": {
+				"type": "UserAssigned",
+				"userAssignedIdentities": {
+					"[format('{0}', resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('userIdentity')))]": {}
+				}
+			},
+			"kind": "AzurePowerShell",
+			"properties": {
+				"forceUpdateTag": "[parameters('utcValue')]",
+				"azPowerShellVersion": "8.2",
+				"timeout": "PT1H",
+				"arguments": "[format(' -rgName {0} -vmName {1} -subID {2}', resourceGroup().name, variables('WindowsVMName'), subscription().subscriptionId)]",
+				"scriptContent": "param( [string] [Parameter(Mandatory=$true)] $rgName, [string] [Parameter(Mandatory=$true)] $vmName, [string] [Parameter(Mandatory=$true)] $subID); $ErrorActionPreference = 'Stop'; Set-AzContext -Subscription $subID; Set-AzDefault -ResourceGroupName $rgName; Restart-AzVM -ResourceGroupName $rgName -Name $vmName -NoWait; }",
+				"cleanupPreference": "OnSuccess",
+				"retentionInterval": "P1D"
 			}
 		}
 	]
