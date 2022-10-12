@@ -7,7 +7,7 @@
 		"alias": "RYMCCALL",
 		"GitHub": "https://github.com/rjmccallumbigl/Azure-ARM-Templates",
 		"Enablement": "https://learn.microsoft.com/en-us/troubleshoot/azure/virtual-machines/welcome-virtual-machines",
-		"deploymentLink": "https://labbox.azurewebsites.net/api/Labbox?url=https://raw.githubusercontent.com/rjmccallumbigl/Azure-ARM-Templates/main/ConnectivityLabs.json"
+		"deploymentLink": "https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2f%2fraw.githubusercontent.com%2frjmccallumbigl%2fAzure-ARM-Templates%2fmain%2fConnectivityLabs.json"
 	},
 	"parameters": {
 		"adminUsername": {
@@ -598,19 +598,25 @@
 			}
 		},
 		{
-			// ❌
-			"type": "Microsoft.Compute/virtualMachines/runCommands",
-			"apiVersion": "2021-11-01",
-			"name": "[concat(variables('windowsVMName'), '15', '/injectRunCommand')]",
+			// Testing
+			"name": "[concat(variables('windowsVMName'), '15', '/CustomScriptExtension')]",
+			"type": "Microsoft.Compute/virtualMachines/extensions",
 			"location": "[resourceGroup().location]",
+			"apiVersion": "2019-03-01",
 			"dependsOn": [
 				"[concat(resourceId('Microsoft.Compute/virtualMachines', variables('windowsVMName')),'15')]"
 			],
 			"properties": {
-				"source": {
-					"script": "Start-Process powershell -Verb runAs -ArgumentList {New-Item -Path \"HKLM:\\Software\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\" -Name \"Citrix\";Set-ItemProperty -Path \"HKLM:\\Software\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Citrix\" -Name \"DisplayName\" -Value \"Citrix\"; Set-ItemProperty -Path \"HKLM:\\Software\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Citrix\" -Name \"DisplayVersion\" -Value 2.00.4333; Set-ItemProperty -Path \"HKLM:\\Software\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Citrix\" -Name \"InstallDate\" -Value 20200210;Set-ItemProperty -Path \"HKLM: \\Software\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Citrix\" -Name \"Publisher\" -Value \"Citrix\";reg add \"HKLM\\SYSTEM\\CurrentControlSet\\control\\Terminal Server\\Winstations\\RDP-Tcp\" /v LoadableProtocol_Object /t REG_SZ /d \"RPM.CtxRdpProtocolManager\" /f; Restart-Computer -force }"
-				},
-				"timeoutInSeconds": 60
+				"publisher": "Microsoft.Compute",
+				"type": "CustomScriptExtension",
+				"typeHandlerVersion": "1.9",
+				"autoUpgradeMinorVersion": true,
+				"protectedSettings": {
+					"commandToExecute": "powershell -File machineKeysRDP.ps1",
+					"fileUris": [
+						"https://raw.githubusercontent.com/rjmccallumbigl/Azure-ARM-Templates/main/Scripts/machineKeysRDP.ps1"
+					]
+				}
 			}
 		},
 		// {
