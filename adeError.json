@@ -64,6 +64,13 @@
 			"metadata": {
 				"description": "Specifies your object ID. Get it by using Get-AzADUser -SignedIn cmdlet."
 			}
+		},
+		"utcValue": {
+			"defaultValue": "[utcNow()]",
+			"type": "string",
+			"metadata": {
+				"description": "UTC"
+			}
 		}
 	},
 	"variables": {
@@ -76,13 +83,11 @@
 		"virtualNetworkName": "MyVNET",
 		"publicIPAddressName": "myPublicIP",
 		"networkSecurityGroupName": "default-NSG",
-		"WindowsVMCount": 2,
 		"encryptionOperation": "EnableEncryption",
 		"KeyEncryptionAlgorithm": "RSA-OAEP",
 		"KeyVaultURL": "[concat('https://', parameters('vaultName'), '.vault.azure.net/')]",
 		"KeyVaultResourceId": "[concat(subscription().id,'/resourceGroups/',resourceGroup().name,'/providers/Microsoft.KeyVault/vaults/', parameters('vaultName'))]",
 		"VolumeType": "OS",
-		"utcValue": "[utcNow()]",
 		"userIdentity": "[tolower(concat('ui-', uniquestring(resourceGroup().id)))]",
 		"bootstrapRoleAssignmentId": "[guid(concat(resourceGroup().id, 'contributor'))]",
 		"contributorRoleDefinitionId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', 'b24988ac-6180-42a0-ab88-20f7382dd24c')]"
@@ -376,9 +381,9 @@
 			},
 			"kind": "AzurePowerShell",
 			"properties": {
-				"forceUpdateTag": "[variables('utcValue')]",
+				"forceUpdateTag": "[parameters('utcValue')]",
 				"azPowerShellVersion": "3.0",
-				"timeout": "PT30M",
+				"timeout": "PT1H",
 				"arguments": "[format(' -rgName {0} -vmName {1} -subID {2}', resourceGroup().name, variables('WindowsVMName'), subscription().subscriptionId)]",
 				"scriptContent": "param( [string] [Parameter(Mandatory=$true)] $rgName, [string] [Parameter(Mandatory=$true)] $vmName, [string] [Parameter(Mandatory=$true)] $subID); $ErrorActionPreference = 'Stop'; Set-AzContext -Subscription $subID; Set-AzDefault -ResourceGroupName $rgName; $status = ''; while ([String]::IsNullOrWhiteSpace($status)) { $runCommand = Invoke-AzVMRunCommand -ResourceGroupName $rgName -name $vmName -CommandId 'RunPowerShellScript' -ScriptString '$encryptionStatus = Manage-bde -status;$encryptionStatus -like \"*Percentage Encrypted: 100.0%*\"'; $status = ($runCommand.Value | Where-Object { $_.Code -like '*StdOut*' }).Message; }",
 				"cleanupPreference": "OnSuccess",
