@@ -97,7 +97,8 @@
 			"storageAccountNamePrefix": "[parameters('storageUri')]",
 			"sasToken": "[variables('_artifactsLocationSasToken')]",
 			"domainName": "[variables('domainName')]"
-		}
+		},
+		"adNicIP": "10.0.0.10"
 	},
 	"resources": [
 		{
@@ -132,6 +133,19 @@
 							"sourcePortRange": "*",
 							"destinationAddressPrefix": "*"
 						}
+					},
+					{
+						"name": "default-allow-22",
+						"properties": {
+							"priority": 1001,
+							"access": "Allow",
+							"direction": "Inbound",
+							"destinationPortRange": "22",
+							"protocol": "Tcp",
+							"sourceAddressPrefix": "[parameters('yourPublicIP')]",
+							"sourcePortRange": "*",
+							"destinationAddressPrefix": "*"
+						}
 					}
 				]
 			}
@@ -148,6 +162,12 @@
 				"addressSpace": {
 					"addressPrefixes": [
 						"[variables('addressPrefix')]"
+					]
+				},
+				"dhcpOptions": {
+					"dnsServers": [
+						"[variables('adNicIP')]",
+						"168.63.129.16"
 					]
 				},
 				"subnets": [
@@ -168,9 +188,36 @@
 			"apiVersion": "2020-08-01",
 			"name": "[concat(variables('nicName'), copyIndex(1))]",
 			"copy": {
-				"count": "[add(variables('windowsVMCount'),variables('linuxVMCount'))]",
-				"name": "nicCopy"
+				"count": "[variables('windowsGroup1')]",
+				"name": "nicCopy1"
 			},
+			"location": "[parameters('location')]",
+			"dependsOn": [
+				"publicIPcopy",
+				"[variables('virtualNetworkName')]",
+				"[resourceId('Microsoft.Network/networkInterfaces', concat(variables('nicName'), '4'))]"
+			],
+			"properties": {
+				"ipConfigurations": [
+					{
+						"name": "ipconfig1",
+						"properties": {
+							"privateIPAllocationMethod": "Dynamic",
+							"publicIPAddress": {
+								"id": "[resourceId('Microsoft.Network/publicIPAddresses',concat(variables('publicIPAddressName'), copyIndex(1)))]"
+							},
+							"subnet": {
+								"id": "[variables('subnetRef')]"
+							}
+						}
+					}
+				]
+			}
+		},
+		{
+			"type": "Microsoft.Network/networkInterfaces",
+			"apiVersion": "2020-08-01",
+			"name": "[concat(variables('nicName'), '4')]",
 			"location": "[parameters('location')]",
 			"dependsOn": [
 				"publicIPcopy",
@@ -181,9 +228,41 @@
 					{
 						"name": "ipconfig1",
 						"properties": {
+							"privateIPAllocationMethod": "Static",
+							"privateIPAddress": "[variables('adNicIP')]",
+							"publicIPAddress": {
+								"id": "[resourceId('Microsoft.Network/publicIPAddresses',concat(variables('publicIPAddressName'), '4'))]"
+							},
+							"subnet": {
+								"id": "[variables('subnetRef')]"
+							}
+						}
+					}
+				]
+			}
+		},
+		{
+			"type": "Microsoft.Network/networkInterfaces",
+			"apiVersion": "2020-08-01",
+			"name": "[concat(variables('nicName'), copyIndex(5))]",
+			"copy": {
+				"count": "[add(variables('windowsGroup2'),variables('linuxVMCount'))]",
+				"name": "nicCopy2"
+			},
+			"location": "[parameters('location')]",
+			"dependsOn": [
+				"publicIPcopy",
+				"[variables('virtualNetworkName')]",
+				"[resourceId('Microsoft.Network/networkInterfaces', concat(variables('nicName'), copyIndex(1)))]"
+			],
+			"properties": {
+				"ipConfigurations": [
+					{
+						"name": "ipconfig1",
+						"properties": {
 							"privateIPAllocationMethod": "Dynamic",
 							"publicIPAddress": {
-								"id": "[resourceId('Microsoft.Network/publicIPAddresses',concat(variables('publicIPAddressName'), copyIndex(1)))]"
+								"id": "[resourceId('Microsoft.Network/publicIPAddresses',concat(variables('publicIPAddressName'), copyIndex(5)))]"
 							},
 							"subnet": {
 								"id": "[variables('subnetRef')]"
@@ -248,7 +327,8 @@
 			},
 			"location": "[parameters('location')]",
 			"dependsOn": [
-				"nicCopy"
+				"nicCopy1",
+				"nicCopy2"
 			],
 			"properties": {
 				"hardwareProfile": {
@@ -298,7 +378,8 @@
 			},
 			"location": "[parameters('location')]",
 			"dependsOn": [
-				"nicCopy"
+				"nicCopy1",
+				"nicCopy2"
 			],
 			"properties": {
 				"hardwareProfile": {
@@ -348,7 +429,8 @@
 			},
 			"location": "[parameters('location')]",
 			"dependsOn": [
-				"nicCopy"
+				"nicCopy1",
+				"nicCopy2"
 			],
 			"properties": {
 				"hardwareProfile": {
@@ -534,7 +616,7 @@
 			}
 		},
 		{
-			// Testing
+			// 👍🏿
 			"type": "Microsoft.Compute/virtualMachines/runCommands",
 			"apiVersion": "2021-11-01",
 			"name": "[concat(variables('windowsVMName'), '11', '/injectRunCommand')]",
@@ -550,23 +632,29 @@
 			}
 		},
 		{
-			// ❌
-			"type": "Microsoft.Compute/virtualMachines/runCommands",
-			"apiVersion": "2021-11-01",
-			"name": "[concat(variables('windowsVMName'), '12', '/injectRunCommand')]",
+			// 👍🏿
+			"name": "[concat(variables('windowsVMName'), '12', '/CustomScriptExtension')]",
+			"type": "Microsoft.Compute/virtualMachines/extensions",
 			"location": "[resourceGroup().location]",
+			"apiVersion": "2019-03-01",
 			"dependsOn": [
 				"[concat(resourceId('Microsoft.Compute/virtualMachines', variables('windowsVMName')),'12')]"
 			],
 			"properties": {
-				"source": {
-					"script": "Start-Process powershell -Verb runAs -ArgumentList {md C:\\temp; icacls C:\\ProgramData\\Microsoft\\Crypto\\RSA\\MachineKeys /save c:\\temp\\machinekeys /T; takeown /f \"C:\\ProgramData\\Microsoft\\Crypto\\RSA\\MachineKeys\" /a /r; icacls C:\\ProgramData\\Microsoft\\Crypto\\RSA\\MachineKeys /remove \"NT AUTHORITY\\System\"; icacls C:\\ProgramData\\Microsoft\\Crypto\\RSA\\MachineKeys /remove \"BUILTIN\\Administrators\"; icacls C:\\ProgramData\\Microsoft\\Crypto\\RSA\\MachineKeys /remove \"NT AUTHORITY\\NETWORK SERVICE\"; $ACL = Get-Acl -Path \"C:\\ProgramData\\Microsoft\\Crypto\\RSA\\MachineKeys\"; $acl.Access | %{$acl.RemoveAccessRule($_)}; $User = New-Object System.Security.Principal.Ntaccount(\"NT AUTHORITY\\NETWORK SERVICE\"); $ACL.SetOwner($User); $ACL | Set-Acl -Path \"C:\\ProgramData\\Microsoft\\Crypto\\RSA\\MachineKeys\"; Get-ACL -Path \"C:\\ProgramData\\Microsoft\\Crypto\\RSA\\MachineKeys\"; Import-Module PKI; Set-Location Cert:\\LocalMachine; $RdpCertThumbprint = 'Cert:\\LocalMachine\\Remote Desktop\\'+((Get-ChildItem -Path 'Cert:\\LocalMachine\\Remote Desktop\\').thumbprint); Remove-Item -Path $RdpCertThumbprint; Restart-Service termservice -Force;}"
-				},
-				"timeoutInSeconds": 60
+				"publisher": "Microsoft.Compute",
+				"type": "CustomScriptExtension",
+				"typeHandlerVersion": "1.9",
+				"autoUpgradeMinorVersion": true,
+				"protectedSettings": {
+					"commandToExecute": "powershell -File machineKeysRDP.ps1",
+					"fileUris": [
+						"https://raw.githubusercontent.com/rjmccallumbigl/Azure-ARM-Templates/main/Scripts/machineKeysRDP.ps1"
+					]
+				}
 			}
 		},
 		// {
-			// Testing
+		// ❌
 		// 	"type": "Microsoft.Compute/virtualMachines/runCommands",
 		// 	"apiVersion": "2021-11-01",
 		// 	"name": "[concat(variables('windowsVMName'), '13', '/injectRunCommand')]",
@@ -598,61 +686,23 @@
 			}
 		},
 		{
-			// Testing
-			"name": "[concat(variables('windowsVMName'), '15', '/CustomScriptExtension')]",
-			"type": "Microsoft.Compute/virtualMachines/extensions",
+			// ❌
+			"type": "Microsoft.Compute/virtualMachines/runCommands",
+			"apiVersion": "2021-11-01",
+			"name": "[concat(variables('windowsVMName'), '15', '/injectRunCommand')]",
 			"location": "[resourceGroup().location]",
-			"apiVersion": "2019-03-01",
 			"dependsOn": [
 				"[concat(resourceId('Microsoft.Compute/virtualMachines', variables('windowsVMName')),'15')]"
 			],
 			"properties": {
-				"publisher": "Microsoft.Compute",
-				"type": "CustomScriptExtension",
-				"typeHandlerVersion": "1.9",
-				"autoUpgradeMinorVersion": true,
-				"protectedSettings": {
-					"commandToExecute": "powershell -File machineKeysRDP.ps1",
-					"fileUris": [
-						"https://raw.githubusercontent.com/rjmccallumbigl/Azure-ARM-Templates/main/Scripts/machineKeysRDP.ps1"
-					]
-				}
+				"source": {
+					"script": "Start-Process powershell -Verb runAs -ArgumentList {New-Item -Path \"HKLM:\\Software\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\" -Name \"Citrix\";Set-ItemProperty -Path \"HKLM:\\Software\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Citrix\" -Name \"DisplayName\" -Value \"Citrix\"; Set-ItemProperty -Path \"HKLM:\\Software\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Citrix\" -Name \"DisplayVersion\" -Value 2.00.4333; Set-ItemProperty -Path \"HKLM:\\Software\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Citrix\" -Name \"InstallDate\" -Value 20200210;Set-ItemProperty -Path \"HKLM: \\Software\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Citrix\" -Name \"Publisher\" -Value \"Citrix\";reg add \"HKLM\\SYSTEM\\CurrentControlSet\\control\\Terminal Server\\Winstations\\RDP-Tcp\" /v LoadableProtocol_Object /t REG_SZ /d \"RPM.CtxRdpProtocolManager\" /f; Restart-Computer -force }"
+				},
+				"timeoutInSeconds": 60
 			}
 		},
-		// {
-		// Testing
-		// 	"type": "Microsoft.Compute/virtualMachines/runCommands",
-		// 	"apiVersion": "2021-11-01",
-		// 	"name": "[concat(variables('windowsVMName'), '16', '/injectRunCommand')]",
-		// 	"location": "[resourceGroup().location]",
-		// 	"dependsOn": [
-		// 		"[concat(resourceId('Microsoft.Compute/virtualMachines', variables('windowsVMName')),'16')]"
-		// 	],
-		// 	"properties": {
-		// 		"source": {
-		// 			"script": "Start-Process powershell -Verb runAs -ArgumentList {}"
-		// 		},
-		// 		"timeoutInSeconds": 60
-		// 	}
-		// },
-		// {
-		// 	 Testing
-		// 	"type": "Microsoft.Compute/virtualMachines/runCommands",
-		// 	"apiVersion": "2021-11-01",
-		// 	"name": "[concat(variables('linuxVMName'), '1', '/injectRunCommand')]",
-		// 	"location": "[resourceGroup().location]",
-		// 	"dependsOn": [
-		// 		"[concat(resourceId('Microsoft.Compute/virtualMachines', variables('linuxVMName')),'1')]"
-		// 	],
-		// 	"properties": {
-		// 		"source": {
-		// 			"scriptUri": "https://raw.githubusercontent.com/rjmccallumbigl/Azure-ARM-Templates/main/Scripts/updateFstab.sh"
-		// 		},
-		// 		"timeoutInSeconds": 120
-		// 	}
-		// },
 		{
-			// Testing
+			// 👍🏿
 			"name": "[concat(variables('linuxVMName'), '1', '/injectRunCommand')]",
 			"type": "Microsoft.Compute/virtualMachines/extensions",
 			"location": "[resourceGroup().location]",
@@ -673,24 +723,24 @@
 				}
 			}
 		},
-			// },
-			// {
-			// 	"type": "Microsoft.Compute/virtualMachines/runCommands",
-			// 	"apiVersion": "2021-11-01",
-			// 	"name": "[concat(variables('linuxVMName'), '2', '/injectRunCommand')]",
-			// 	"location": "[resourceGroup().location]",
-			// 	"dependsOn": [
-			// 		"[concat(resourceId('Microsoft.Compute/virtualMachines', variables('linuxVMName')),'2')]"
-			// 	],
-			// 	"properties": {
-			// 		"source": {
-			// 			"scriptUri": ""
-			// 		},
-			// 		"timeoutInSeconds": 120
-			// 	}
-			// },
+		// },
+		// {
+		// 	"type": "Microsoft.Compute/virtualMachines/runCommands",
+		// 	"apiVersion": "2021-11-01",
+		// 	"name": "[concat(variables('linuxVMName'), '2', '/injectRunCommand')]",
+		// 	"location": "[resourceGroup().location]",
+		// 	"dependsOn": [
+		// 		"[concat(resourceId('Microsoft.Compute/virtualMachines', variables('linuxVMName')),'2')]"
+		// 	],
+		// 	"properties": {
+		// 		"source": {
+		// 			"scriptUri": ""
+		// 		},
+		// 		"timeoutInSeconds": 120
+		// 	}
+		// },
 		{
-			// Testing
+			// 👍🏿
 			"name": "[concat(variables('linuxVMName'), '3', '/injectRunCommand')]",
 			"type": "Microsoft.Compute/virtualMachines/extensions",
 			"location": "[resourceGroup().location]",
