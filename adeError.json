@@ -416,7 +416,7 @@
 			],
 			"properties": {
 				"source": {
-					"script": "Start-Process powershell -Verb runAs -ArgumentList { $bekVolume = Get-Partition | where { $_.Size -lt 100MB }; $bekVolume | Set-Partition -NewDriveLetter V; $bekArray = Get-ChildItem 'v:\\*.bek' -Force; $bekArray | Rename-Item -NewName { $_.Name -replace '.bek', '.bek.backup'}; Restart-Computer -Force; }"
+					"script": "Start-Job { Start-Sleep -seconds 60; $bekVolume = Get-Partition | where { $_.Size -lt 100MB }; $bekVolume | Set-Partition -NewDriveLetter V; $bekArray = Get-ChildItem 'v:\\*.bek' -Force; $bekArray | Rename-Item -NewName { $_.Name -replace '.bek', '.bek.backup'}; Restart-Computer -Force; }"
 				},
 				"timeoutInSeconds": 60
 			}
