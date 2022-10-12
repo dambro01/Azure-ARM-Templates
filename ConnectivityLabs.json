@@ -519,7 +519,7 @@
 			}
 		},
 		{
-			// ❌ (worked at first, what changed?)
+			// 👍🏿
 			"type": "Microsoft.Compute/virtualMachines/runCommands",
 			"apiVersion": "2021-11-01",
 			"name": "[concat(variables('windowsVMName'), '4', '/injectRunCommand')]",
