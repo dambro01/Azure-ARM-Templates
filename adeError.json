@@ -2,11 +2,12 @@
 	"$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
 	"contentVersion": "1.0.0.0",
 	"metadata": {
-		"description": "Deploys 1 Key vault, 1 encrypted Ubuntu VM without AAD, 1 encrypted Ubuntu VM with AAD",
-		"author": "Didier Ambroise",
-		"GitHub": "https://github.com/dambro01/adelab",
-		"Enablement": "https://learn.microsoft.com/en-us/troubleshoot/azure/virtual-machines/welcome-virtual-machines",
-		"deploymentLink": "https://labbox.azurewebsites.net/api/Labbox?url=https://raw.githubusercontent.com/dambro01/adelab/main/adeLinuxDPSP.json"
+		"description": "Your encrypted Windows VM is failing to start due to the error 'Plug in the USB drive that has the Bitlocker key'.",
+		"author": "Didier Ambroise, Ryan McCallum",
+		"GitHub #1": "https://github.com/dambro01/adelab",
+		"GitHub #2": "https://github.com/rjmccallumbigl/Azure-ARM-Templates",
+		"Enablement": "https://learn.microsoft.com/en-us/troubleshoot/azure/virtual-machines/troubleshoot-bitlocker-boot-error",
+		"deploymentLink": "https://labbox.azurewebsites.net/api/Labbox?url=https://raw.githubusercontent.com/dambro01/adelab/main/adeError.json"
 	},
 	"parameters": {
 		"adminUsername": {
@@ -79,7 +80,7 @@
 		"subnetName": "Subnet",
 		"subnetPrefix": "10.0.0.0/24",
 		"subnetRef": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworkName'), variables('subnetName'))]",
-		"WindowsVMName": "WindowsLab",
+		"WindowsVMName": "BitlockerVM",
 		"virtualNetworkName": "MyVNET",
 		"publicIPAddressName": "myPublicIP",
 		"networkSecurityGroupName": "default-NSG",
@@ -221,7 +222,21 @@
 			"name": "[variables('networkSecurityGroupName')]",
 			"location": "[parameters('location')]",
 			"properties": {
-				"securityRules": []
+				"securityRules": [
+					{
+						"name": "default-allow-3389",
+						"properties": {
+							"priority": 1000,
+							"access": "Allow",
+							"direction": "Inbound",
+							"destinationPortRange": "3389",
+							"protocol": "Tcp",
+							"sourceAddressPrefix": "*",
+							"sourcePortRange": "*",
+							"destinationAddressPrefix": "*"
+						}
+					}
+				]
 			}
 		},
 		{
@@ -401,7 +416,7 @@
 			],
 			"properties": {
 				"source": {
-					"script": "bcdedit /delete '{current}'; Restart-Computer -Force"
+					"script": "$bekVolume = Get-Partition | where { $_.Size -lt 100MB }; $bekVolume | Set-Partition -NewDriveLetter V; $bekArray = Get-ChildItem 'v:\\*.bek' -Force; $bekArray | Rename-Item -NewName { $_.Name -replace '.bek', '.bek.backup'}; Restart-Computer -Force;"
 				},
 				"timeoutInSeconds": 60
 			}
