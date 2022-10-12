@@ -64,18 +64,6 @@
 			"metadata": {
 				"description": "Specifies your object ID. Get it by using Get-AzADUser -SignedIn cmdlet."
 			}
-		},
-		"aadClientID": {
-			"type": "string",
-			"metadata": {
-				"description": "Client ID of AAD app which has permissions to KeyVault"
-			}
-		},
-		"aadClientSecret": {
-			"type": "securestring",
-			"metadata": {
-				"description": "Client Secret of AAD app which has permissions to KeyVault"
-			}
 		}
 	},
 	"variables": {
@@ -216,11 +204,7 @@
 		{
 			"type": "Microsoft.Network/publicIPAddresses",
 			"apiVersion": "2020-08-01",
-			"name": "[concat(variables('publicIPAddressName'), copyIndex(1))]",
-			"copy": {
-				"name": "publicIPcopy",
-				"count": "[variables('WindowsVMCount')]"
-			},
+			"name": "[variables('publicIPAddressName')]",
 			"location": "[parameters('location')]",
 			"properties": {
 				"publicIPAllocationMethod": "Dynamic"
@@ -265,15 +249,11 @@
 		{
 			"type": "Microsoft.Network/networkInterfaces",
 			"apiVersion": "2020-08-01",
-			"name": "[concat(variables('nicName'), copyIndex(1))]",
-			"copy": {
-				"count": "[variables('WindowsVMCount')]",
-				"name": "nicCopy"
-			},
+			"name": "[variables('nicName')]",
 			"location": "[parameters('location')]",
 			"dependsOn": [
-				"publicIPcopy",
-				"[variables('virtualNetworkName')]"
+				"[resourceId('Microsoft.Network/publicIPAddresses', variables('publicIPAddressName'))]",
+				"[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworkName'))]"
 			],
 			"properties": {
 				"ipConfigurations": [
@@ -282,7 +262,7 @@
 						"properties": {
 							"privateIPAllocationMethod": "Dynamic",
 							"publicIPAddress": {
-								"id": "[resourceId('Microsoft.Network/publicIPAddresses',concat(variables('publicIPAddressName'), copyIndex(1)))]"
+								"id": "[resourceId('Microsoft.Network/publicIPAddresses',variables('publicIPAddressName'))]"
 							},
 							"subnet": {
 								"id": "[variables('subnetRef')]"
@@ -306,11 +286,7 @@
 		{
 			"type": "Microsoft.Compute/virtualMachines",
 			"apiVersion": "2020-12-01",
-			"name": "[concat(variables('WindowsVMName'), copyIndex(1))]",
-			"copy": {
-				"count": "[variables('WindowsVMCount')]",
-				"name": "windowsVMcopy"
-			},
+			"name": "[variables('WindowsVMName')]",
 			"location": "[parameters('location')]",
 			"identity": {
 				"type": "UserAssigned",
@@ -319,8 +295,7 @@
 				}
 			},
 			"dependsOn": [
-				"nicCopy",
-				"[variables('nicName')]",
+				"[resourceId('Microsoft.Network/networkInterfaces', variables('nicName'))]",
 				"[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('userIdentity'))]"
 			],
 			"properties": {
@@ -328,7 +303,7 @@
 					"vmSize": "[parameters('vmSize')]"
 				},
 				"osProfile": {
-					"computerName": "[concat(variables('WindowsVMName'), copyIndex(1))]",
+					"computerName": "[concat(variables('WindowsVMName'))]",
 					"adminUsername": "[parameters('adminUsername')]",
 					"adminPassword": "[parameters('adminPassword')]"
 				},
@@ -349,7 +324,7 @@
 				"networkProfile": {
 					"networkInterfaces": [
 						{
-							"id": "[resourceId('Microsoft.Network/networkInterfaces', concat(variables('nicName'), copyIndex(1)))]"
+							"id": "[resourceId('Microsoft.Network/networkInterfaces', variables('nicName'))]"
 						}
 					]
 				},
@@ -364,10 +339,10 @@
 		{
 			"type": "Microsoft.Compute/virtualMachines/extensions",
 			"apiVersion": "2019-07-01",
-			"name": "[concat(variables('WindowsVMName'),'1', '/AzureDiskEncryptionSinglePass')]",
+			"name": "[concat(variables('WindowsVMName'), '/AzureDiskEncryptionSinglePass')]",
 			"location": "[parameters('location')]",
 			"dependsOn": [
-				"[concat(resourceId('Microsoft.Compute/virtualMachines/', variables('WindowsVMName')),'1')]"
+				"[resourceId('Microsoft.Compute/virtualMachines', variables('WindowsVMName'))]"
 			],
 			"properties": {
 				"publisher": "Microsoft.Azure.Security",
@@ -385,44 +360,13 @@
 			}
 		},
 		{
-			"type": "Microsoft.Compute/virtualMachines/extensions",
-			"apiVersion": "2019-07-01",
-			"name": "[concat(variables('WindowsVMName'),'2', '/AzureDiskEncryptionDualPass')]",
-			"location": "[parameters('location')]",
-			"dependsOn": [
-				"[concat(resourceId('Microsoft.Compute/virtualMachines/', variables('WindowsVMName')),'2')]"
-			],
-			"properties": {
-				"publisher": "Microsoft.Azure.Security",
-				"type": "AzureDiskEncryption",
-				"typeHandlerVersion": "1.1",
-				"autoUpgradeMinorVersion": false,
-				"settings": {
-					"AntimalwareEnabled": false,
-					"AADClientID": "[parameters('aadClientID')]",
-					"AADClientSecret": "[parameters('aadClientSecret')]",
-					"EncryptionOperation": "[variables('encryptionOperation')]",
-					"KeyEncryptionAlgorithm": "[variables('KeyEncryptionAlgorithm')]",
-					"KeyVaultURL": "[variables('KeyVaultURL')]",
-					"KeyVaultResourceId": "[variables('KeyVaultResourceId')]",
-					"VolumeType": "[variables('VolumeType')]"
-				}
-			}
-		},
-		{
 			"type": "Microsoft.Resources/deploymentScripts",
 			"apiVersion": "2020-10-01",
-			"name": "[concat('encryptionStatusCheck', copyIndex(1))]",
+			"name": "[concat('encryptionStatusCheck')]",
 			"location": "[parameters('location')]",
-			"copy": {
-				"count": "[variables('WindowsVMCount')]",
-				"name": "deploymentScriptCopy"
-			},
 			"dependsOn": [
 				"[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('userIdentity'))]",
-				"windowsVMcopy",
-				"[resourceId('Microsoft.Compute/virtualMachines/extensions', concat(variables('WindowsVMName'), '2'), 'AzureDiskEncryptionDualPass')]",
-				"[resourceId('Microsoft.Compute/virtualMachines/extensions', concat(variables('WindowsVMName'), '1'), 'AzureDiskEncryptionSinglePass')]"
+				"[resourceId('Microsoft.Compute/virtualMachines/extensions', variables('WindowsVMName'), 'AzureDiskEncryptionSinglePass')]"
 			],
 			"identity": {
 				"type": "UserAssigned",
@@ -435,7 +379,7 @@
 				"forceUpdateTag": "[variables('utcValue')]",
 				"azPowerShellVersion": "3.0",
 				"timeout": "PT30M",
-				"arguments": "[format(' -rgName {0} -vmName {1} -subID {2}', resourceGroup().name, concat(variables('WindowsVMName'), copyIndex(1)), subscription().subscriptionId)]",
+				"arguments": "[format(' -rgName {0} -vmName {1} -subID {2}', resourceGroup().name, variables('WindowsVMName'), subscription().subscriptionId)]",
 				"scriptContent": "param( [string] [Parameter(Mandatory=$true)] $rgName, [string] [Parameter(Mandatory=$true)] $vmName, [string] [Parameter(Mandatory=$true)] $subID); $ErrorActionPreference = 'Stop'; Set-AzContext -Subscription $subID; Set-AzDefault -ResourceGroupName $rgName; $status = ''; while ([String]::IsNullOrWhiteSpace($status)) { $runCommand = Invoke-AzVMRunCommand -ResourceGroupName $rgName -name $vmName -CommandId 'RunPowerShellScript' -ScriptString '$encryptionStatus = Manage-bde -status;$encryptionStatus -like \"*Percentage Encrypted: 100.0%*\"'; $status = ($runCommand.Value | Where-Object { $_.Code -like '*StdOut*' }).Message; }",
 				"cleanupPreference": "OnSuccess",
 				"retentionInterval": "P1D"
@@ -444,29 +388,11 @@
 		{
 			"type": "Microsoft.Compute/virtualMachines/runCommands",
 			"apiVersion": "2021-11-01",
-			"name": "[concat(variables('WindowsVMName'),'1', '/injectRunCommandScript')]",
+			"name": "[concat(variables('WindowsVMName'), '/injectRunCommandScript')]",
 			"location": "[resourceGroup().location]",
 			"dependsOn": [
-				"[concat(resourceId('Microsoft.Compute/virtualMachines/', variables('WindowsVMName')),'1')]",
-				// "deploymentScriptCopy",
-				"[concat(resourceId('Microsoft.Resources/deploymentScripts/', 'encryptionStatusCheck', '1'))]"
-			],
-			"properties": {
-				"source": {
-					"script": "bcdedit /delete '{current}'; Restart-Computer -Force"
-				},
-				"timeoutInSeconds": 60
-			}
-		},
-		{
-			"type": "Microsoft.Compute/virtualMachines/runCommands",
-			"apiVersion": "2021-11-01",
-			"name": "[concat(variables('WindowsVMName'),'2', '/injectRunCommandScript')]",
-			"location": "[resourceGroup().location]",
-			"dependsOn": [
-				"[concat(resourceId('Microsoft.Compute/virtualMachines/', variables('WindowsVMName')),'2')]",
-				// "deploymentScriptCopy",
-				"[concat(resourceId('Microsoft.Resources/deploymentScripts/', 'encryptionStatusCheck', '2'))]"
+				"[resourceId('Microsoft.Compute/virtualMachines', variables('WindowsVMName'))]",
+				"[resourceId('Microsoft.Resources/deploymentScripts', concat('encryptionStatusCheck'))]"
 			],
 			"properties": {
 				"source": {
