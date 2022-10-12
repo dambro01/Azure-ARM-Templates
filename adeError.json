@@ -7,7 +7,7 @@
 		"GitHub #1": "https://github.com/dambro01/adelab",
 		"GitHub #2": "https://github.com/rjmccallumbigl/Azure-ARM-Templates",
 		"Enablement": "https://learn.microsoft.com/en-us/troubleshoot/azure/virtual-machines/troubleshoot-bitlocker-boot-error",
-		"deploymentLink": "https://labbox.azurewebsites.net/api/Labbox?url=https://raw.githubusercontent.com/dambro01/adelab/main/adeError.json"
+		"deploymentLink": "https://labbox.azurewebsites.net/api/Labbox?url=https://raw.githubusercontent.com/rjmccallumbigl/Azure-ARM-Templates/main/adeError.json"
 	},
 	"parameters": {
 		"adminUsername": {
