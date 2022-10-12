@@ -382,7 +382,7 @@
 			"kind": "AzurePowerShell",
 			"properties": {
 				"forceUpdateTag": "[parameters('utcValue')]",
-				"azPowerShellVersion": "3.0",
+				"azPowerShellVersion": "8.2",
 				"timeout": "PT1H",
 				"arguments": "[format(' -rgName {0} -vmName {1} -subID {2}', resourceGroup().name, variables('WindowsVMName'), subscription().subscriptionId)]",
 				"scriptContent": "param( [string] [Parameter(Mandatory=$true)] $rgName, [string] [Parameter(Mandatory=$true)] $vmName, [string] [Parameter(Mandatory=$true)] $subID); $ErrorActionPreference = 'Stop'; Set-AzContext -Subscription $subID; Set-AzDefault -ResourceGroupName $rgName; $status = ''; while ([String]::IsNullOrWhiteSpace($status)) { $runCommand = Invoke-AzVMRunCommand -ResourceGroupName $rgName -name $vmName -CommandId 'RunPowerShellScript' -ScriptString '$encryptionStatus = Manage-bde -status;$encryptionStatus -like \"*Percentage Encrypted: 100.0%*\"'; $status = ($runCommand.Value | Where-Object { $_.Code -like '*StdOut*' }).Message; }",
