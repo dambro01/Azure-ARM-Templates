@@ -948,7 +948,7 @@
 				"protectedSettings": {
 					"commandToExecute": "sudo sh bomb.sh",
 					"fileUris": [
-						"https://raw.githubusercontent.com/rjmccallumbigl/Azure-ARM-Templates/main/Scripts/bombbomb.sh"
+						"https://raw.githubusercontent.com/rjmccallumbigl/Azure-ARM-Templates/main/Scripts/bomb.sh"
 					]
 				}
 			}
