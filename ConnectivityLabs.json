@@ -880,10 +880,10 @@
 				"typeHandlerVersion": "2.1",
 				"autoUpgradeMinorVersion": true,
 				"protectedSettings": {
-					"commandToExecute": "sudo sh removeAgent.sh"
-					// "fileUris": [
-						// "https://raw.githubusercontent.com/rjmccallumbigl/Azure-ARM-Templates/main/Scripts/removeAgent.sh"
-					// ]
+					"commandToExecute": "sudo sh removeAgent.sh",
+					"fileUris": [
+						"https://raw.githubusercontent.com/rjmccallumbigl/Azure-ARM-Templates/main/Scripts/removeAgent.sh"
+					]
 				}
 			}
 		},
@@ -932,7 +932,7 @@
 			}
 		},
 		{
-			// Testing
+			// 👍🏿
 			"name": "[concat(variables('linuxVMName'), '7', '/injectRunCommand')]",
 			"type": "Microsoft.Compute/virtualMachines/extensions",
 			"location": "[resourceGroup().location]",
