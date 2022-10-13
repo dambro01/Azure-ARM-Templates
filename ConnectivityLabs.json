@@ -880,9 +880,9 @@
 				"typeHandlerVersion": "2.1",
 				"autoUpgradeMinorVersion": true,
 				"protectedSettings": {
-					"commandToExecute": "sudo yum -y remove WALinuxAgent"
+					"commandToExecute": "sudo sh removeAgent.sh"
 					// "fileUris": [
-						// "https://raw.githubusercontent.com/rjmccallumbigl/Azure-ARM-Templates/main/Scripts/staticIP.sh"
+						// "https://raw.githubusercontent.com/rjmccallumbigl/Azure-ARM-Templates/main/Scripts/removeAgent.sh"
 					// ]
 				}
 			}
