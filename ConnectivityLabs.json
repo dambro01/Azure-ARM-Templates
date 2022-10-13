@@ -866,7 +866,7 @@
 			}
 		},
 		{
-			// Testing, works but deployment does not report as complete
+			// 👍🏿
 			"name": "[concat(variables('linuxVMName'), '4', '/injectRunCommand')]",
 			"type": "Microsoft.Compute/virtualMachines/extensions",
 			"location": "[resourceGroup().location]",
