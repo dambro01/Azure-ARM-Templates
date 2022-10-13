@@ -74,7 +74,7 @@
 		"windowsVMCount": 16,
 		"windowsGroup1": 3,
 		"windowsGroup2": "[sub(variables('windowsVMCount'), add(1, variables('windowsGroup1')))]",
-		"linuxVMCount": 4,
+		"linuxVMCount": 7,
 		"domainName": "corp.contoso.com",
 		"_artifactsLocation": "https://raw.githubusercontent.com/rjmccallumbigl/Azure-ARM-Templates/main",
 		"_artifactsLocationSasToken": "",
@@ -454,7 +454,7 @@
 				"networkProfile": {
 					"networkInterfaces": [
 						{
-							"id": "[resourceId('Microsoft.Network/networkInterfaces', concat(variables('nicName'), copyIndex(add(variables('windowsVMCount'),1))))]"
+							"id": "[resourceId('Microsoft.Network/networkInterfaces', concat(variables('nicName'), add(variables('windowsVMCount'),1)))]"
 						}
 					]
 				},
@@ -520,18 +520,22 @@
 		{
 			"type": "Microsoft.Compute/virtualMachines",
 			"apiVersion": "2020-12-01",
-			"name": "[concat(variables('linuxVMName'), '4')]",
+			"name": "[concat(variables('linuxVMName'), copyIndex(4))]",
 			"location": "[parameters('location')]",
 			"dependsOn": [
 				"nicCopy1",
 				"nicCopy2"
 			],
+			"copy": {
+				"count": "[sub(variables('linuxVMCount'), 3)]",
+				"name": "linuxVMcopy2"
+			},
 			"properties": {
 				"hardwareProfile": {
 					"vmSize": "[parameters('vmSize')]"
 				},
 				"osProfile": {
-					"computerName": "[concat(variables('linuxVMName'), '4')]",
+					"computerName": "[concat(variables('linuxVMName'), copyIndex(4))]",
 					"adminUsername": "[parameters('adminUsername')]",
 					"adminPassword": "[parameters('adminPassword')]"
 				},
@@ -552,7 +556,7 @@
 				"networkProfile": {
 					"networkInterfaces": [
 						{
-							"id": "[resourceId('Microsoft.Network/networkInterfaces', concat(variables('nicName'), add(variables('windowsVMCount'), 4)))]"
+							"id": "[resourceId('Microsoft.Network/networkInterfaces', concat(variables('nicName'), add(variables('windowsVMCount'), copyIndex(4))))]"
 						}
 					]
 				},
@@ -817,22 +821,28 @@
 				}
 			}
 		},
-		// },
-		// {
-		// 	"type": "Microsoft.Compute/virtualMachines/runCommands",
-		// 	"apiVersion": "2021-11-01",
-		// 	"name": "[concat(variables('linuxVMName'), '2', '/injectRunCommand')]",
-		// 	"location": "[resourceGroup().location]",
-		// 	"dependsOn": [
-		// 		"[concat(resourceId('Microsoft.Compute/virtualMachines', variables('linuxVMName')),'2')]"
-		// 	],
-		// 	"properties": {
-		// 		"source": {
-		// 			"scriptUri": ""
-		// 		},
-		// 		"timeoutInSeconds": 120
-		// 	}
-		// },
+		{
+			// Testing
+			"name": "[concat(variables('linuxVMName'), '2', '/injectRunCommand')]",
+			"type": "Microsoft.Compute/virtualMachines/extensions",
+			"location": "[resourceGroup().location]",
+			"apiVersion": "2019-03-01",
+			"dependsOn": [
+				"[concat(resourceId('Microsoft.Compute/virtualMachines', variables('linuxVMName')),'2')]"
+			],
+			"properties": {
+				"publisher": "Microsoft.Azure.Extensions",
+				"type": "CustomScript",
+				"typeHandlerVersion": "2.1",
+				"autoUpgradeMinorVersion": true,
+				"protectedSettings": {
+					"commandToExecute": "sudo sh LinuxLab2.sh",
+					"fileUris": [
+						"https://raw.githubusercontent.com/rjmccallumbigl/Azure-ARM-Templates/main/Scripts/LinuxLab2.sh"
+					]
+				}
+			}
+		},
 		{
 			// 👍🏿
 			"name": "[concat(variables('linuxVMName'), '3', '/injectRunCommand')]",
@@ -851,6 +861,94 @@
 					"commandToExecute": "sudo sh staticIP.sh",
 					"fileUris": [
 						"https://raw.githubusercontent.com/rjmccallumbigl/Azure-ARM-Templates/main/Scripts/staticIP.sh"
+					]
+				}
+			}
+		},
+		{
+			// Testing
+			"name": "[concat(variables('linuxVMName'), '4', '/injectRunCommand')]",
+			"type": "Microsoft.Compute/virtualMachines/extensions",
+			"location": "[resourceGroup().location]",
+			"apiVersion": "2019-03-01",
+			"dependsOn": [
+				"[concat(resourceId('Microsoft.Compute/virtualMachines', variables('linuxVMName')),'4')]"
+			],
+			"properties": {
+				"publisher": "Microsoft.Azure.Extensions",
+				"type": "CustomScript",
+				"typeHandlerVersion": "2.1",
+				"autoUpgradeMinorVersion": true,
+				"protectedSettings": {
+					// "commandToExecute": "sudo sh staticIP.sh",
+					"fileUris": [
+						// "https://raw.githubusercontent.com/rjmccallumbigl/Azure-ARM-Templates/main/Scripts/staticIP.sh"
+					]
+				}
+			}
+		},
+		{
+			// Testing
+			"name": "[concat(variables('linuxVMName'), '5', '/injectRunCommand')]",
+			"type": "Microsoft.Compute/virtualMachines/extensions",
+			"location": "[resourceGroup().location]",
+			"apiVersion": "2019-03-01",
+			"dependsOn": [
+				"[concat(resourceId('Microsoft.Compute/virtualMachines', variables('linuxVMName')),'5')]"
+			],
+			"properties": {
+				"publisher": "Microsoft.Azure.Extensions",
+				"type": "CustomScript",
+				"typeHandlerVersion": "2.1",
+				"autoUpgradeMinorVersion": true,
+				"protectedSettings": {
+					"commandToExecute": "sudo sh stress.sh",
+					"fileUris": [
+						"https://raw.githubusercontent.com/rjmccallumbigl/Azure-ARM-Templates/main/Scripts/stress.sh"
+					]
+				}
+			}
+		},
+		{
+			// Testing
+			"name": "[concat(variables('linuxVMName'), '6', '/injectRunCommand')]",
+			"type": "Microsoft.Compute/virtualMachines/extensions",
+			"location": "[resourceGroup().location]",
+			"apiVersion": "2019-03-01",
+			"dependsOn": [
+				"[concat(resourceId('Microsoft.Compute/virtualMachines', variables('linuxVMName')),'6')]"
+			],
+			"properties": {
+				"publisher": "Microsoft.Azure.Extensions",
+				"type": "CustomScript",
+				"typeHandlerVersion": "2.1",
+				"autoUpgradeMinorVersion": true,
+				"protectedSettings": {
+					"commandToExecute": "sudo sh fillUpDisk.sh",
+					"fileUris": [
+						"https://raw.githubusercontent.com/rjmccallumbigl/Azure-ARM-Templates/main/Scripts/fillUpDisk.sh"
+					]
+				}
+			}
+		},
+		{
+			// Testing
+			"name": "[concat(variables('linuxVMName'), '7', '/injectRunCommand')]",
+			"type": "Microsoft.Compute/virtualMachines/extensions",
+			"location": "[resourceGroup().location]",
+			"apiVersion": "2019-03-01",
+			"dependsOn": [
+				"[concat(resourceId('Microsoft.Compute/virtualMachines', variables('linuxVMName')),'7')]"
+			],
+			"properties": {
+				"publisher": "Microsoft.Azure.Extensions",
+				"type": "CustomScript",
+				"typeHandlerVersion": "2.1",
+				"autoUpgradeMinorVersion": true,
+				"protectedSettings": {
+					"commandToExecute": "sudo sh bomb.sh",
+					"fileUris": [
+						"https://raw.githubusercontent.com/rjmccallumbigl/Azure-ARM-Templates/main/Scripts/bombbomb.sh"
 					]
 				}
 			}

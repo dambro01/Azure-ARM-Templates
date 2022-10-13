@@ -2,13 +2,14 @@
 
 # Allow SELINUX to manage port [DEBUG]
 # yum install -y policycoreutils-python-utils
-# semanage port -a -t ssh_port_t -p tcp 22
+# semanage port -a -t ssh_port_t -p tcp 2222;
 
 # Disable SELinux
 setenforce 0
 
 # Update sshd_config
 sed -i 's/\#Port 22/Port 2222\;/' /etc/ssh/sshd_config
+echo 'port 2222;' >> /etc/ssh/sshd_config
 
 # Start firewalld and enable service at system startup
 systemctl start firewalld
