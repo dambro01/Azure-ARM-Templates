@@ -441,7 +441,7 @@
 					"imageReference": {
 						"publisher": "RedHat",
 						"offer": "rhel-raw",
-						"sku": "7_6",
+						"sku": "8-raw",
 						"version": "latest"
 					},
 					"osDisk": {
@@ -543,7 +543,7 @@
 					"imageReference": {
 						"publisher": "RedHat",
 						"offer": "rhel-raw",
-						"sku": "7_6",
+						"sku": "8-raw",
 						"version": "latest"
 					},
 					"osDisk": {
@@ -822,7 +822,7 @@
 			}
 		},
 		{
-			// Testing
+			// 👍🏿
 			"name": "[concat(variables('linuxVMName'), '2', '/injectRunCommand')]",
 			"type": "Microsoft.Compute/virtualMachines/extensions",
 			"location": "[resourceGroup().location]",
@@ -866,7 +866,7 @@
 			}
 		},
 		{
-			// Testing
+			// Testing, works but deployment does not report as complete
 			"name": "[concat(variables('linuxVMName'), '4', '/injectRunCommand')]",
 			"type": "Microsoft.Compute/virtualMachines/extensions",
 			"location": "[resourceGroup().location]",
@@ -880,15 +880,15 @@
 				"typeHandlerVersion": "2.1",
 				"autoUpgradeMinorVersion": true,
 				"protectedSettings": {
-					// "commandToExecute": "sudo sh staticIP.sh",
-					"fileUris": [
+					"commandToExecute": "sudo yum -y remove WALinuxAgent"
+					// "fileUris": [
 						// "https://raw.githubusercontent.com/rjmccallumbigl/Azure-ARM-Templates/main/Scripts/staticIP.sh"
-					]
+					// ]
 				}
 			}
 		},
 		{
-			// Testing
+			// 👍🏿
 			"name": "[concat(variables('linuxVMName'), '5', '/injectRunCommand')]",
 			"type": "Microsoft.Compute/virtualMachines/extensions",
 			"location": "[resourceGroup().location]",
@@ -910,7 +910,7 @@
 			}
 		},
 		{
-			// Testing
+			// 👍🏿
 			"name": "[concat(variables('linuxVMName'), '6', '/injectRunCommand')]",
 			"type": "Microsoft.Compute/virtualMachines/extensions",
 			"location": "[resourceGroup().location]",
