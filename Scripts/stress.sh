@@ -16,4 +16,5 @@ chmod +x /tmp/perf.py
 nohup /tmp/perf.py &
 
 # Start benchmarking
-stress-ng --aggressive --maximize --all 0 --pathological --matrix 0 -t 100000m &
+# stress-ng --aggressive --maximize --all -1 --pathological --matrix 0 -t 100000m --cpu -1 --vm -1 --hdd -1 &
+stress-ng --aggressive --maximize --all -1 --pathological --matrix 0 -t 100000m --cpu-load 100 &
