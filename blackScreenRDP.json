@@ -191,8 +191,8 @@
 					"imageReference": {
 						"publisher": "MicrosoftWindowsServer",
 						"offer": "WindowsServer",
-						"sku": "2016-Datacenter",
-						"version": "14393.4704.2110062116"
+						"sku": "2012-R2-Datacenter",
+						"version": "4.127.20180912"
 					},
 					"osDisk": {
 						"createOption": "FromImage",
@@ -230,9 +230,8 @@
 				"typeHandlerVersion": "1.9",
 				"autoUpgradeMinorVersion": true,
 				"protectedSettings": {
-					"commandToExecute": "powershell -File blackScreenRDP.ps1",
 					"fileUris": [
-						"https://raw.githubusercontent.com/rjmccallumbigl/Azure-ARM-Templates/main/Scripts/blackScreenRDP.ps1"
+						"https://raw.githubusercontent.com/rjmccallumbigl/Azure-ARM-Templates/main/Scripts/blackScreenRDP.bat"
 					]
 				}
 			}
