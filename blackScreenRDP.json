@@ -230,6 +230,7 @@
 				"typeHandlerVersion": "1.9",
 				"autoUpgradeMinorVersion": true,
 				"protectedSettings": {
+					"commandToExecute": "cmd.exe blackScreenRDP.bat",
 					"fileUris": [
 						"https://raw.githubusercontent.com/rjmccallumbigl/Azure-ARM-Templates/main/Scripts/blackScreenRDP.bat"
 					]
