@@ -183,7 +183,7 @@
 					"vmSize": "[parameters('vmSize')]"
 				},
 				"osProfile": {
-					"computerName": "[variables('vmName')]",
+					"computerName": "breakRDP",
 					"adminUsername": "[parameters('adminUsername')]",
 					"adminPassword": "[parameters('adminPassword')]"
 				},
