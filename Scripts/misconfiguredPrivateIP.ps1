@@ -1,4 +1,4 @@
-# Disables and denies connections on "Remote Desktop" firewall group rule
+# Changes the IP inside at the OS level
 
 $nic = Get-NetAdapter | where {$_.InterfaceDescription -like "Microsoft Hyper-V*"}
 Set-DnsClientServerAddress -InterfaceIndex $nic.ifIndex -ServerAddresses ("168.63.129.16")
