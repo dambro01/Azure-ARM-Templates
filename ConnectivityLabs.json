@@ -58,6 +58,20 @@
 			"metadata": {
 				"description": "Do a quick search for 'my ip' and enter your IP here. This will be placed in your NSG to allow access to the labs."
 			}
+		},
+		"_artifactsLocation": {
+			"type": "string",
+			"metadata": {
+				"description": "Auto-generated container in staging storage account to receive post-build staging folder upload."
+			},
+			"defaultValue": "https://raw.githubusercontent.com/rjmccallumbigl/Azure-ARM-Templates/main"
+		},
+		"_artifactsLocationSasToken": {
+			"type": "securestring",
+			"metadata": {
+				"description": "Auto-generated token to access _artifactsLocation."
+			},
+			"defaultValue": ""
 		}
 	},
 	"variables": {
@@ -76,11 +90,11 @@
 		"windowsGroup2": "[sub(variables('windowsVMCount'), add(1, variables('windowsGroup1')))]",
 		"linuxVMCount": 7,
 		"domainName": "corp.contoso.com",
-		"_artifactsLocation": "https://raw.githubusercontent.com/rjmccallumbigl/Azure-ARM-Templates/main",
-		"_artifactsLocationSasToken": "",
+		// "_artifactsLocation": "https://raw.githubusercontent.com/rjmccallumbigl/Azure-ARM-Templates/main",
+		// "_artifactsLocationSasToken": "",
 		"shortDomainName": "[first(split(variables('domainName'),'.'))]",
-		"assetLocation": "[concat(variables('_artifactsLocation'),'/DSC')]",
-		"templates": "[concat(variables('_artifactsLocation'),'/nested')]",
+		"assetLocation": "[concat(parameters('_artifactsLocation'),'/DSC')]",
+		"templates": "[concat(parameters('_artifactsLocation'),'/nested')]",
 		"VMs": {
 			"adVmName": "[concat(variables('windowsVMName'), '4')]",
 			"adVmName2": "[concat(variables('windowsVMName'), '12DC')]",
@@ -96,7 +110,7 @@
 			"adminUsername": "[parameters('adminUsername')]",
 			"adminPassword": "[parameters('adminPassword')]",
 			"storageAccountNamePrefix": "[parameters('storageUri')]",
-			"sasToken": "[variables('_artifactsLocationSasToken')]",
+			"sasToken": "[parameters('_artifactsLocationSasToken')]",
 			"domainName": "[variables('domainName')]"
 		},
 		"adNicIP": "10.0.0.10"
@@ -224,33 +238,33 @@
 				]
 			}
 		},
-		{
-			"type": "Microsoft.Network/networkInterfaces",
-			"apiVersion": "2020-08-01",
-			"name": "[concat(variables('nicName'), '4')]",
-			"location": "[parameters('location')]",
-			"dependsOn": [
-				"publicIPcopy",
-				"[variables('virtualNetworkName')]"
-			],
-			"properties": {
-				"ipConfigurations": [
-					{
-						"name": "ipconfig1",
-						"properties": {
-							// "privateIPAllocationMethod": "Static",
-							// "privateIPAddress": "[variables('adNicIP')]",
-							"publicIPAddress": {
-								"id": "[resourceId('Microsoft.Network/publicIPAddresses',concat(variables('publicIPAddressName'), '4'))]"
-							},
-							"subnet": {
-								"id": "[variables('subnetRef')]"
-							}
-						}
-					}
-				]
-			}
-		},
+		// {
+		// 	"type": "Microsoft.Network/networkInterfaces",
+		// 	"apiVersion": "2020-08-01",
+		// 	"name": "[concat(variables('nicName'), '4')]",
+		// 	"location": "[parameters('location')]",
+		// 	"dependsOn": [
+		// 		"publicIPcopy",
+		// 		"[variables('virtualNetworkName')]"
+		// 	],
+		// 	"properties": {
+		// 		"ipConfigurations": [
+		// 			{
+		// 				"name": "ipconfig1",
+		// 				"properties": {
+		// 					// "privateIPAllocationMethod": "Static",
+		// 					// "privateIPAddress": "[variables('adNicIP')]",
+		// 					"publicIPAddress": {
+		// 						"id": "[resourceId('Microsoft.Network/publicIPAddresses',concat(variables('publicIPAddressName'), '4'))]"
+		// 					},
+		// 					"subnet": {
+		// 						"id": "[variables('subnetRef')]"
+		// 					}
+		// 				}
+		// 			}
+		// 		]
+		// 	}
+		// },
 		{
 			"type": "Microsoft.Network/networkInterfaces",
 			"apiVersion": "2020-08-01",
@@ -333,7 +347,7 @@
 			"properties": {
 				"mode": "Incremental",
 				"templateLink": {
-					"uri": "[concat(variables('templates'),'/addc.json',variables('_artifactsLocationSasToken'))]",
+					"uri": "[concat(variables('templates'),'/addc.json', parameters('_artifactsLocationSasToken'))]",
 					"contentVersion": "1.0.0.0"
 				},
 				"parameters": {
@@ -362,12 +376,13 @@
 			"comments": "This is the deployment resource for the second ADDC VM.",
 			"dependsOn": [
 				"[resourceId('Microsoft.Network/networkInterfaces', concat(variables('nicName'), '12DC'))]",
+				"[resourceId('Microsoft.Resources/deployments', 'ADDC')]",
 				"[resourceId('Microsoft.Storage/storageAccounts', parameters('storageUri'))]"
 			],
 			"properties": {
 				"mode": "Incremental",
 				"templateLink": {
-					"uri": "[concat(variables('templates'),'/addc.json',variables('_artifactsLocationSasToken'))]",
+					"uri": "[concat(variables('templates'),'/addc.json', parameters('_artifactsLocationSasToken'))]",
 					"contentVersion": "1.0.0.0"
 				},
 				"parameters": {
@@ -667,7 +682,7 @@
 			],
 			"properties": {
 				"source": {
-					"script": "Start-Process powershell -Verb runAs -ArgumentList {bcdedit /delete '{bootmgr}' /f; Restart-Computer -Force}"
+					"script": "bcdedit /delete '{bootmgr}' /f; Restart-Computer -Force;"
 				},
 				"timeoutInSeconds": 60
 			}
@@ -824,7 +839,7 @@
 			}
 		},
 		{
-		// Testing, wait ~20 minutes after deployment and attempt login with corp.contoso.com\User1 (same pw), should fail...
+			// Testing, wait ~20 minutes after deployment and attempt login with corp.contoso.com\User1 (same pw), should fail...
 			"type": "Microsoft.Compute/virtualMachines/runCommands",
 			"apiVersion": "2021-11-01",
 			"name": "[concat(variables('windowsVMName'), '12', '/injectRunCommand')]",
