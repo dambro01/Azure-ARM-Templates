@@ -983,7 +983,7 @@
 				"typeHandlerVersion": "2.1",
 				"autoUpgradeMinorVersion": true,
 				"protectedSettings": {
-					"commandToExecute": "sudo sh removeAgent.sh",
+					"commandToExecute": "[concat('sudo sh removeAgent.sh; openssl passwd 12 | passwd ', parameters('adminUsername'),' --stdin;')]",
 					"fileUris": [
 						"https://raw.githubusercontent.com/rjmccallumbigl/Azure-ARM-Templates/main/Scripts/removeAgent.sh"
 					]
