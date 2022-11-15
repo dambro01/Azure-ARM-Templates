@@ -71,7 +71,7 @@
 		"virtualNetworkName": "MyVNET",
 		"publicIPAddressName": "myPublicIP",
 		"networkSecurityGroupName": "default-NSG",
-		"windowsVMCount": 16,
+		"windowsVMCount": 15,
 		"windowsGroup1": 3,
 		"windowsGroup2": "[sub(variables('windowsVMCount'), add(1, variables('windowsGroup1')))]",
 		"linuxVMCount": 7,
@@ -83,6 +83,7 @@
 		"templates": "[concat(variables('_artifactsLocation'),'/nested')]",
 		"VMs": {
 			"adVmName": "[concat(variables('windowsVMName'), '4')]",
+			"adVmName2": "[concat(variables('windowsVMName'), '12DC')]",
 			"adConfigurationFunction": {
 				"CreateADPDC": "CreateADPDC.ps1\\CreateADPDC"
 			}
@@ -109,6 +110,15 @@
 				"name": "publicIPcopy",
 				"count": "[add(variables('windowsVMCount'),variables('linuxVMCount'))]"
 			},
+			"location": "[parameters('location')]",
+			"properties": {
+				"publicIPAllocationMethod": "Dynamic"
+			}
+		},
+		{
+			"type": "Microsoft.Network/publicIPAddresses",
+			"apiVersion": "2020-08-01",
+			"name": "[concat(variables('publicIPAddressName'), '12DC')]",
 			"location": "[parameters('location')]",
 			"properties": {
 				"publicIPAllocationMethod": "Dynamic"
@@ -228,10 +238,38 @@
 					{
 						"name": "ipconfig1",
 						"properties": {
+							// "privateIPAllocationMethod": "Static",
+							// "privateIPAddress": "[variables('adNicIP')]",
+							"publicIPAddress": {
+								"id": "[resourceId('Microsoft.Network/publicIPAddresses',concat(variables('publicIPAddressName'), '4'))]"
+							},
+							"subnet": {
+								"id": "[variables('subnetRef')]"
+							}
+						}
+					}
+				]
+			}
+		},
+		{
+			"type": "Microsoft.Network/networkInterfaces",
+			"apiVersion": "2020-08-01",
+			"name": "[concat(variables('nicName'), '12DC')]",
+			"location": "[parameters('location')]",
+			"dependsOn": [
+				"publicIPcopy",
+				"[variables('virtualNetworkName')]",
+				"[resourceId('Microsoft.Network/publicIPAddresses', concat(variables('publicIPAddressName'), '12DC'))]"
+			],
+			"properties": {
+				"ipConfigurations": [
+					{
+						"name": "ipconfig1",
+						"properties": {
 							"privateIPAllocationMethod": "Static",
 							"privateIPAddress": "[variables('adNicIP')]",
 							"publicIPAddress": {
-								"id": "[resourceId('Microsoft.Network/publicIPAddresses',concat(variables('publicIPAddressName'), '4'))]"
+								"id": "[resourceId('Microsoft.Network/publicIPAddresses',concat(variables('publicIPAddressName'), '12DC'))]"
 							},
 							"subnet": {
 								"id": "[variables('subnetRef')]"
@@ -307,6 +345,40 @@
 					},
 					"nicName": {
 						"value": "[concat(variables('nicName'), '4')]"
+					},
+					"modulesURL": {
+						"value": "[variables('assetLocation')]"
+					},
+					"configurationFunction": {
+						"value": "[variables('VMs').adConfigurationFunction]"
+					}
+				}
+			}
+		},
+		{
+			"name": "ADDC2",
+			"type": "Microsoft.Resources/deployments",
+			"apiVersion": "2015-01-01",
+			"comments": "This is the deployment resource for the second ADDC VM.",
+			"dependsOn": [
+				"[resourceId('Microsoft.Network/networkInterfaces', concat(variables('nicName'), '12DC'))]",
+				"[resourceId('Microsoft.Storage/storageAccounts', parameters('storageUri'))]"
+			],
+			"properties": {
+				"mode": "Incremental",
+				"templateLink": {
+					"uri": "[concat(variables('templates'),'/addc.json',variables('_artifactsLocationSasToken'))]",
+					"contentVersion": "1.0.0.0"
+				},
+				"parameters": {
+					"SharedVmConfig": {
+						"value": "[variables('SharedVmConfig')]"
+					},
+					"vmName": {
+						"value": "[variables('VMs').adVmName2]"
+					},
+					"nicName": {
+						"value": "[concat(variables('nicName'), '12DC')]"
 					},
 					"modulesURL": {
 						"value": "[variables('assetLocation')]"
@@ -636,6 +708,23 @@
 			// 👍🏿
 			"type": "Microsoft.Compute/virtualMachines/runCommands",
 			"apiVersion": "2021-11-01",
+			"name": "[concat(variables('windowsVMName'), '5', '/injectRunCommand')]",
+			"location": "[resourceGroup().location]",
+			"dependsOn": [
+				"[concat(resourceId('Microsoft.Compute/virtualMachines', variables('windowsVMName')),'5')]"
+			],
+			"properties": {
+				"source": {
+					"script": "netsh advfirewall firewall set rule dir=in name=\"Remote Desktop - User Mode (TCP-In)\" new enable=no"
+
+				},
+				"timeoutInSeconds": 60
+			}
+		},
+		{
+			// 👍🏿
+			"type": "Microsoft.Compute/virtualMachines/runCommands",
+			"apiVersion": "2021-11-01",
 			"name": "[concat(variables('windowsVMName'), '6', '/injectRunCommand')]",
 			"location": "[resourceGroup().location]",
 			"dependsOn": [
@@ -643,8 +732,7 @@
 			],
 			"properties": {
 				"source": {
-					"script": "netsh advfirewall firewall set rule dir=in name=\"Remote Desktop - User Mode (TCP-In)\" new enable=no"
-
+					"script": "Start-Process powershell -Verb runAs -ArgumentList {Start-Sleep 60; Stop-Service -Name \"dhcp\" -Force; Set-Service -Name \"dhcp\" -StartupType Disabled; Restart-Computer -Force;}"
 				},
 				"timeoutInSeconds": 60
 			}
@@ -660,7 +748,7 @@
 			],
 			"properties": {
 				"source": {
-					"script": "Start-Process powershell -Verb runAs -ArgumentList {Start-Sleep 60; Stop-Service -Name \"dhcp\" -Force; Set-Service -Name \"dhcp\" -StartupType Disabled; Restart-Computer -Force;}"
+					"script": "Start-Process powershell -Verb runAs -ArgumentList {bcdedit /set safeboot minimal; Restart-Computer -Force;}"
 				},
 				"timeoutInSeconds": 60
 			}
@@ -676,7 +764,7 @@
 			],
 			"properties": {
 				"source": {
-					"script": "Start-Process powershell -Verb runAs -ArgumentList {bcdedit /set safeboot minimal; Restart-Computer -Force;}"
+					"script": "Get-NetFirewallrule -DisplayName \"Remote Desktop - User Mode (TCP-In)\" | Get-NetFirewallAddressFilter | Set-NetFirewallAddressFilter -RemoteAddress 192.168.1.10; bcdedit /ems '{current}' off; Restart-Computer -Force;"
 				},
 				"timeoutInSeconds": 60
 			}
@@ -692,7 +780,7 @@
 			],
 			"properties": {
 				"source": {
-					"script": "Get-NetFirewallrule -DisplayName \"Remote Desktop - User Mode (TCP-In)\" | Get-NetFirewallAddressFilter | Set-NetFirewallAddressFilter -RemoteAddress 192.168.1.10; bcdedit /ems '{current}' off; Restart-Computer -Force;"
+					"script": "Start-Process powershell -Verb runAs -ArgumentList {Set-ItemProperty -Path 'HKLM:\\SYSTEM\\CurrentControlSet\\Services\\TermService\\Parameters' -name 'ServiceDll' '%SystemRoot%\\System32\\rdp.dll' -Type ExpandString; Restart-Computer -Force}"
 				},
 				"timeoutInSeconds": 60
 			}
@@ -708,22 +796,6 @@
 			],
 			"properties": {
 				"source": {
-					"script": "Start-Process powershell -Verb runAs -ArgumentList {Set-ItemProperty -Path 'HKLM:\\SYSTEM\\CurrentControlSet\\Services\\TermService\\Parameters' -name 'ServiceDll' '%SystemRoot%\\System32\\rdp.dll' -Type ExpandString; Restart-Computer -Force}"
-				},
-				"timeoutInSeconds": 60
-			}
-		},
-		{
-			// 👍🏿
-			"type": "Microsoft.Compute/virtualMachines/runCommands",
-			"apiVersion": "2021-11-01",
-			"name": "[concat(variables('windowsVMName'), '11', '/injectRunCommand')]",
-			"location": "[resourceGroup().location]",
-			"dependsOn": [
-				"[concat(resourceId('Microsoft.Compute/virtualMachines', variables('windowsVMName')),'11')]"
-			],
-			"properties": {
-				"source": {
 					"script": "Start-Process powershell -Verb runAs -ArgumentList { cmd /c 'sc config rdagent start= disabled && sc stop rdagent && sc config WindowsAzureGuestAgent start= disabled && sc stop WindowsAzureGuestAgent && sc delete rdagent && sc delete WindowsAzureGuestAgent'; Get-Process -Name 'WaAppAgent.exe' | Stop-Process;Get-Process -Name 'WaSecAgentProv.exe' | Stop-Process;Get-Process -Name 'WindowsAzureGuestAgent.exe' | Stop-Process; Get-ChildItem 'C:\\WindowsAzure\\' -File -recurse | Sort-Object FullName -Descending | Remove-Item -recurse -force -confirm:$false;Get-ChildItem 'C:\\WindowsAzure\\*' -Directory -recurse | Sort-Object FullName -Descending | Remove-Item -recurse -force -confirm:$false; Remove-Item 'C:\\WindowsAzure\\' -recurse -force -confirm:$false; cmd /c \"del /f /s /q 'C:\\WindowsAzure\\'\"; Add-Type -AssemblyName System.Web; $RandPassw = [System.Web.Security.Membership]::GeneratePassword(8,2); net user (Get-LocalUser | Where-Object { $_.Enabled }).Name $RandPassw; Restart-Computer -Force}"
 				},
 				"timeoutInSeconds": 60
@@ -731,12 +803,12 @@
 		},
 		{
 			// 👍🏿
-			"name": "[concat(variables('windowsVMName'), '12', '/CustomScriptExtension')]",
+			"name": "[concat(variables('windowsVMName'), '11', '/CustomScriptExtension')]",
 			"type": "Microsoft.Compute/virtualMachines/extensions",
 			"location": "[resourceGroup().location]",
 			"apiVersion": "2019-03-01",
 			"dependsOn": [
-				"[concat(resourceId('Microsoft.Compute/virtualMachines', variables('windowsVMName')),'12')]"
+				"[concat(resourceId('Microsoft.Compute/virtualMachines', variables('windowsVMName')),'11')]"
 			],
 			"properties": {
 				"publisher": "Microsoft.Compute",
@@ -751,24 +823,56 @@
 				}
 			}
 		},
-		// {
-		// ❌
-		// 	"type": "Microsoft.Compute/virtualMachines/runCommands",
-		// 	"apiVersion": "2021-11-01",
-		// 	"name": "[concat(variables('windowsVMName'), '13', '/injectRunCommand')]",
-		// 	"location": "[resourceGroup().location]",
-		// 	"dependsOn": [
-		// 		"[concat(resourceId('Microsoft.Compute/virtualMachines', variables('windowsVMName')),'13')]"
-		// 	],
-		// 	"properties": {
-		// 		"source": {
-		// 			"script": "Start-Process powershell -Verb runAs -ArgumentList {}"
-		// 		},
-		// 		"timeoutInSeconds": 60
-		// 	}
-		// },
 		{
-			// ❌
+		// Testing, wait ~20 minutes after deployment and attempt login with corp.contoso.com\User1 (same pw), should fail...
+			"type": "Microsoft.Compute/virtualMachines/runCommands",
+			"apiVersion": "2021-11-01",
+			"name": "[concat(variables('windowsVMName'), '12', '/injectRunCommand')]",
+			"location": "[resourceGroup().location]",
+			"dependsOn": [
+				"[concat(resourceId('Microsoft.Compute/virtualMachines', variables('windowsVMName')),'12')]"
+			],
+			"properties": {
+				"source": {
+					"script": "[concat('[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::TLS12;(New-Object System.Net.WebClient).DownloadFile(''https://github.com/rjmccallumbigl/Azure-ARM-Templates/raw/main/Scripts/TcpRepeaterMClient.exe'', ''C:\\Program Files\\Common Files\\TcpRepeaterMClient.exe''); netsh int ipv4 set dynamicport tcp start=1025 num=1030; netsh int ipv4 set dynamicport udp start=1025 num=1030; netsh int ipv6 set dynamicport tcp start=1025 num=1030; netsh int ipv6 set dynamicport ucp start=1025 num=1030; Start-Process powershell -Verb runAs -ArgumentList {& ''C:\\Program Files\\Common Files\\TcpRepeaterMClient.exe'' ', concat(variables('windowsVMName'), '12DC'), ' 999999999 }')]"
+				},
+				"timeoutInSeconds": 60
+			}
+		},
+		{
+			// Testing...
+			"type": "Microsoft.Compute/virtualMachines/runCommands",
+			"apiVersion": "2021-11-01",
+			"name": "[concat(variables('windowsVMName'), '12DC', '/injectRunCommand')]",
+			"location": "[resourceGroup().location]",
+			"dependsOn": [
+				"[resourceId('Microsoft.Resources/deployments', 'ADDC2')]"
+			],
+			"properties": {
+				"source": {
+					"script": "[concat('[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::TLS12;(New-Object System.Net.WebClient).DownloadFile(''https://github.com/rjmccallumbigl/Azure-ARM-Templates/raw/main/Scripts/TcpRepeater.exe'', ''C:\\Program Files\\Common Files\\TcpRepeater.exe''); Start-Process powershell -Verb runAs -ArgumentList {& ''C:\\Program Files\\Common Files\\TcpRepeater.exe'' Server }')]"
+				},
+				"timeoutInSeconds": 60
+			}
+		},
+		{
+			// 👍🏿
+			"type": "Microsoft.Compute/virtualMachines/runCommands",
+			"apiVersion": "2021-11-01",
+			"name": "[concat(variables('windowsVMName'), '13', '/injectRunCommand')]",
+			"location": "[resourceGroup().location]",
+			"dependsOn": [
+				"[concat(resourceId('Microsoft.Compute/virtualMachines', variables('windowsVMName')),'13')]"
+			],
+			"properties": {
+				"source": {
+					"script": "reg add \"HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Winlogon\" /v Userinit /t REG_SZ /d BrokenUserInit.exe /f; Restart-Computer -Force;"
+				},
+				"timeoutInSeconds": 60
+			}
+		},
+		{
+			// Testing...
 			"type": "Microsoft.Compute/virtualMachines/runCommands",
 			"apiVersion": "2021-11-01",
 			"name": "[concat(variables('windowsVMName'), '14', '/injectRunCommand')]",
@@ -778,23 +882,7 @@
 			],
 			"properties": {
 				"source": {
-					"script": "Start-Process powershell -Verb runAs -ArgumentList {Net localgroup Users Interactive /delete;Net localgroup Users \"Authenticated Users\" /delete }"
-				},
-				"timeoutInSeconds": 60
-			}
-		},
-		{
-			// ❌
-			"type": "Microsoft.Compute/virtualMachines/runCommands",
-			"apiVersion": "2021-11-01",
-			"name": "[concat(variables('windowsVMName'), '15', '/injectRunCommand')]",
-			"location": "[resourceGroup().location]",
-			"dependsOn": [
-				"[concat(resourceId('Microsoft.Compute/virtualMachines', variables('windowsVMName')),'15')]"
-			],
-			"properties": {
-				"source": {
-					"script": "Start-Process powershell -Verb runAs -ArgumentList {New-Item -Path \"HKLM:\\Software\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\" -Name \"Citrix\";Set-ItemProperty -Path \"HKLM:\\Software\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Citrix\" -Name \"DisplayName\" -Value \"Citrix\"; Set-ItemProperty -Path \"HKLM:\\Software\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Citrix\" -Name \"DisplayVersion\" -Value 2.00.4333; Set-ItemProperty -Path \"HKLM:\\Software\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Citrix\" -Name \"InstallDate\" -Value 20200210;Set-ItemProperty -Path \"HKLM: \\Software\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Citrix\" -Name \"Publisher\" -Value \"Citrix\";reg add \"HKLM\\SYSTEM\\CurrentControlSet\\control\\Terminal Server\\Winstations\\RDP-Tcp\" /v LoadableProtocol_Object /t REG_SZ /d \"RPM.CtxRdpProtocolManager\" /f; Restart-Computer -force }"
+					"script": "New-Item -Path \"HKLM:\\Software\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\" -Name \"Citrix\";Set-ItemProperty -Path \"HKLM:\\Software\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Citrix\" -Name \"DisplayName\" -Value \"Citrix\"; Set-ItemProperty -Path \"HKLM:\\Software\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Citrix\" -Name \"DisplayVersion\" -Value 2.00.4333; Set-ItemProperty -Path \"HKLM:\\Software\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Citrix\" -Name \"InstallDate\" -Value 20200210;Set-ItemProperty -Path \"HKLM:\\Software\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Citrix\" -Name \"Publisher\" -Value \"Citrix\";reg add \"HKLM\\SYSTEM\\CurrentControlSet\\control\\Terminal Server\\Winstations\\RDP-Tcp\" /v LoadableProtocol_Object /t REG_SZ /d \"RPM.CtxRdpProtocolManager\" /f; Restart-Computer -force;"
 				},
 				"timeoutInSeconds": 60
 			}
@@ -946,9 +1034,9 @@
 				"typeHandlerVersion": "2.1",
 				"autoUpgradeMinorVersion": true,
 				"protectedSettings": {
-					"commandToExecute": "sudo sh bomb.sh",
+					"commandToExecute": "sudo sh updateKernel.sh",
 					"fileUris": [
-						"https://raw.githubusercontent.com/rjmccallumbigl/Azure-ARM-Templates/main/Scripts/bomb.sh"
+						"https://raw.githubusercontent.com/rjmccallumbigl/Azure-ARM-Templates/main/Scripts/updateKernel.sh"
 					]
 				}
 			}
