@@ -595,7 +595,7 @@
 			],
 			"properties": {
 				"source": {
-					"script": "Start-Process powershell -Verb runAs -ArgumentList {bcdedit /delete '{bootmgr}' /f; Restart-Computer -Force}"
+					"script": "bcdedit /delete '{bootmgr}' /f; Restart-Computer -Force;"
 				},
 				"timeoutInSeconds": 60
 			}
