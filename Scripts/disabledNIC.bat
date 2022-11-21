@@ -1,0 +1,1 @@
+PowerShell -noexit "Start-Job { Start-Sleep -seconds 60; $nic = Get-NetAdapter | where {$_.InterfaceDescription -like \"Microsoft Hyper-V*\"}; Disable-NetAdapter -Name $nic.Name -Confirm:$false; }"
