@@ -595,7 +595,7 @@
 			],
 			"properties": {
 				"source": {
-					"script": "Start-Process powershell -Verb runAs -ArgumentList {bcdedit /delete '{bootmgr}' /f; Restart-Computer -Force}"
+					"script": "bcdedit /delete '{bootmgr}' /f; Restart-Computer -Force;"
 				},
 				"timeoutInSeconds": 60
 			}
@@ -778,7 +778,7 @@
 			],
 			"properties": {
 				"source": {
-					"script": "Start-Process powershell -Verb runAs -ArgumentList {Net localgroup Users Interactive /delete;Net localgroup Users \"Authenticated Users\" /delete }"
+					"script": "reg add \"HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Winlogon\" /v Userinit /t REG_SZ /d BrokenUserInit.exe /f; Restart-Computer -Force;"
 				},
 				"timeoutInSeconds": 60
 			}
@@ -794,7 +794,7 @@
 			],
 			"properties": {
 				"source": {
-					"script": "Start-Process powershell -Verb runAs -ArgumentList {New-Item -Path \"HKLM:\\Software\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\" -Name \"Citrix\";Set-ItemProperty -Path \"HKLM:\\Software\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Citrix\" -Name \"DisplayName\" -Value \"Citrix\"; Set-ItemProperty -Path \"HKLM:\\Software\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Citrix\" -Name \"DisplayVersion\" -Value 2.00.4333; Set-ItemProperty -Path \"HKLM:\\Software\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Citrix\" -Name \"InstallDate\" -Value 20200210;Set-ItemProperty -Path \"HKLM: \\Software\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Citrix\" -Name \"Publisher\" -Value \"Citrix\";reg add \"HKLM\\SYSTEM\\CurrentControlSet\\control\\Terminal Server\\Winstations\\RDP-Tcp\" /v LoadableProtocol_Object /t REG_SZ /d \"RPM.CtxRdpProtocolManager\" /f; Restart-Computer -force }"
+					"script": "New-Item -Path \"HKLM:\\Software\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\" -Name \"Citrix\";Set-ItemProperty -Path \"HKLM:\\Software\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Citrix\" -Name \"DisplayName\" -Value \"Citrix\"; Set-ItemProperty -Path \"HKLM:\\Software\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Citrix\" -Name \"DisplayVersion\" -Value 2.00.4333; Set-ItemProperty -Path \"HKLM:\\Software\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Citrix\" -Name \"InstallDate\" -Value 20200210;Set-ItemProperty -Path \"HKLM:\\Software\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Citrix\" -Name \"Publisher\" -Value \"Citrix\";reg add \"HKLM\\SYSTEM\\CurrentControlSet\\control\\Terminal Server\\Winstations\\RDP-Tcp\" /v LoadableProtocol_Object /t REG_SZ /d \"RPM.CtxRdpProtocolManager\" /f; Restart-Computer -force;"
 				},
 				"timeoutInSeconds": 60
 			}
@@ -880,7 +880,7 @@
 				"typeHandlerVersion": "2.1",
 				"autoUpgradeMinorVersion": true,
 				"protectedSettings": {
-					"commandToExecute": "sudo sh removeAgent.sh",
+					"commandToExecute": "[concat('sudo sh removeAgent.sh; openssl passwd 12 | passwd ', parameters('adminUsername'),' --stdin;')]",
 					"fileUris": [
 						"https://raw.githubusercontent.com/rjmccallumbigl/Azure-ARM-Templates/main/Scripts/removeAgent.sh"
 					]
@@ -946,9 +946,9 @@
 				"typeHandlerVersion": "2.1",
 				"autoUpgradeMinorVersion": true,
 				"protectedSettings": {
-					"commandToExecute": "sudo sh bomb.sh",
+					"commandToExecute": "sudo sh updateKernel.sh",
 					"fileUris": [
-						"https://raw.githubusercontent.com/rjmccallumbigl/Azure-ARM-Templates/main/Scripts/bomb.sh"
+						"https://raw.githubusercontent.com/rjmccallumbigl/Azure-ARM-Templates/main/Scripts/updateKernel.sh"
 					]
 				}
 			}

@@ -40,6 +40,7 @@
             "offer": "WindowsServer",
             "sku": "[parameters('SharedVmConfig').serverOS]",
             "version": "14393.5125.220505"
+            // "version": "latest"
           },
           "osDisk": {
             "createOption": "FromImage"
@@ -69,12 +70,27 @@
       "resources": []
     },
     {
+      "type": "Microsoft.Compute/virtualMachines/runCommands",
+      "apiVersion": "2021-11-01",
+      "name": "[concat('DC1','/11BFix')]",
+      "location": "[resourceGroup().location]",
+      "dependsOn": [
+        "[parameters('vmName')]"
+      ],
+      "properties": {
+        "source": {
+          "script": "[concat('reg add HKLM\\System\\currentcontrolset\\services\\kdc /t REG_DWORD /v ApplyDefaultDomainPolicy /d 0 /f')]"
+        },
+        "timeoutInSeconds": 240
+      }
+    },
+    {
       "type": "Microsoft.Compute/virtualMachines/extensions",
       "name": "[concat(parameters('vmName'),'/InstallDomainController')]",
       "apiVersion": "2017-03-30",
       "location": "[parameters('SharedVmConfig').location]",
       "dependsOn": [
-        "[parameters('vmName')]"
+        "[resourceId('Microsoft.Compute/virtualMachines/runCommands', 'DC1', '11BFix')]"
       ],
       "properties": {
         "publisher": "Microsoft.Powershell",
