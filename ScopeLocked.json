@@ -221,7 +221,7 @@
 			"type": "Microsoft.Authorization/locks",
 			"apiVersion": "2020-05-01",
 			"name": "vmLock",
-			"scope": "[concat('Microsoft.Compute/', '/', variables('vmName'))]",
+			"scope": "[concat('Microsoft.Compute/virtualMachines', '/', variables('vmName'))]",
 			"dependsOn": [
 				"[variables('vmName')]"
 			],
