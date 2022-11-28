@@ -223,7 +223,7 @@
 			"name": "vmLock",
 			"scope": "[concat('Microsoft.Compute/', variables('vmName'))]",
 			"dependsOn": [
-				"[resourceId('Microsoft.Compute/', variables('vmName'))]"
+				"[variables('vmName')]"
 			],
 			"properties": {
 				"level": "CanNotDelete",
