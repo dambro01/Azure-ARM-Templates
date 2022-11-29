@@ -238,7 +238,14 @@
 						"managedDisk": {
 							"storageAccountType": "StandardSSD_LRS"
 						}
-					}
+					},
+					"dataDisks": [
+						{
+							"createOption": "Empty",
+							"diskSizeGB": 30,
+							"lun": 1
+						 }
+					]
 				},
 				"networkProfile": {
 					"networkInterfaces": [
