@@ -24,13 +24,6 @@
 			},
 			"defaultValue": "corp.contoso.com"
 		},
-		"serverOS": {
-			"type": "string",
-			"metadata": {
-				"description": "The OS of application servers in your deployment."
-			},
-			"defaultValue": "2016-Datacenter"
-		},
 		"adminUsername": {
 			"type": "string",
 			"maxLength": 20,
@@ -87,6 +80,7 @@
 		}
 	},
 	"variables": {
+		"serverOS": "2022-Datacenter",
 		"shortDomainName": "[first(split(parameters('domainName'),'.'))]",
 		"domainUserName": "[concat(variables('shortDomainName'),'\\',parameters('adminUsername'))]",
 		"assetLocation": "[concat(parameters('_artifactsLocation'),'/DSC')]",
@@ -109,7 +103,7 @@
 		"SharedVmConfig": {
 			"location": "[resourceGroup().location]",
 			"vmSize": "[parameters('vmSize')]",
-			"serverOS": "[parameters('serverOS')]",
+			"serverOS": "[variables('serverOS')]",
 			"domainUsername": "[variables('domainUsername')]",
 			"createdDomainUserName": "[parameters('domainAccountUsername')]",
 			"adminUsername": "[parameters('adminUsername')]",
