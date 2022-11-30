@@ -90,7 +90,7 @@
 		"SharedVmConfig": {
 			"location": "[resourceGroup().location]",
 			"vmSize": "[parameters('vmSize')]",
-			"serverOS": "2016-Datacenter",
+			"serverOS": "2022-Datacenter",
 			"domainUserName": "[concat(variables('shortDomainName'),'\\',parameters('adminUsername'))]",
 			"adminUsername": "[parameters('adminUsername')]",
 			"adminPassword": "[parameters('adminPassword')]",
