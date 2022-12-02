@@ -229,7 +229,7 @@
 			"dependsOn": [
 				"publicIPcopy",
 				"[variables('virtualNetworkName')]",
-				"[resourceId('Microsoft.Network/networkInterfaces', concat(variables('nicName'), '4'))]"
+				"[resourceId('Microsoft.Network/networkInterfaces', concat(variables('nicName'), '12DC'))]"
 			],
 			"properties": {
 				"ipConfigurations": [
