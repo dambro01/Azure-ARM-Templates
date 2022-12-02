@@ -58,6 +58,13 @@
 			"metadata": {
 				"description": "Storage Account type"
 			}
+		},
+		"utcValue": {
+			"defaultValue": "[utcNow()]",
+			"type": "string",
+			"metadata": {
+				"description": "UTC"
+			}
 		}
 	},
 	"variables": {
@@ -69,9 +76,31 @@
 		"vmName": "rhelVM",
 		"virtualNetworkName": "MyVNET",
 		"publicIPAddressName": "myPublicIP",
-		"networkSecurityGroupName": "default-NSG"
+		"networkSecurityGroupName": "default-NSG",
+		"userIdentity": "[tolower(concat('ui-', uniquestring(resourceGroup().id)))]",
+		"bootstrapRoleAssignmentId": "[guid(concat(resourceGroup().id, 'contributor'))]",
+		"contributorRoleDefinitionId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', 'b24988ac-6180-42a0-ab88-20f7382dd24c')]"
 	},
 	"resources": [
+		{
+			"type": "Microsoft.ManagedIdentity/userAssignedIdentities",
+			"name": "[variables('userIdentity')]",
+			"apiVersion": "2018-11-30",
+			"location": "[parameters('location')]"
+		},
+		{
+			"type": "Microsoft.Authorization/roleAssignments",
+			"apiVersion": "2018-09-01-preview",
+			"name": "[variables('bootstrapRoleAssignmentId')]",
+			"dependsOn": [
+				"[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('userIdentity'))]"
+			],
+			"properties": {
+				"roleDefinitionId": "[variables('contributorRoleDefinitionId')]",
+				"principalId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('userIdentity')), '2018-11-30').principalId]",
+				"principalType": "ServicePrincipal"
+			}
+		},
 		{
 			"type": "Microsoft.Network/publicIPAddresses",
 			"apiVersion": "2020-08-01",
@@ -176,6 +205,12 @@
 			"apiVersion": "2020-12-01",
 			"name": "[variables('vmName')]",
 			"location": "[parameters('location')]",
+			"identity": {
+				"type": "UserAssigned",
+				"userAssignedIdentities": {
+					"[resourceID('Microsoft.ManagedIdentity/userAssignedIdentities/',variables('userIdentity'))]": {}
+				}
+			},
 			"dependsOn": [
 				"[variables('nicName')]"
 			],
@@ -216,12 +251,44 @@
 					}
 				}
 			}
+		},
+		{
+			"type": "Microsoft.Resources/deploymentScripts",
+			"apiVersion": "2020-10-01",
+			"name": "returnValueFromLinuxVM",
+			"location": "[parameters('location')]",
+			"dependsOn": [
+				"[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('userIdentity'))]",
+				"[resourceId('Microsoft.Compute/virtualMachines', variables('vmName'))]",
+				"[resourceId('Microsoft.Compute/snapshots', 'snapshot')]",
+				"[resourceId('Microsoft.Compute/disks', 'snapshotDisk')]"
+			],
+			"identity": {
+				"type": "UserAssigned",
+				"userAssignedIdentities": {
+					"[format('{0}', resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('userIdentity')))]": {}
+				}
+			},
+			"kind": "AzurePowerShell",
+			"properties": {
+				"forceUpdateTag": "[parameters('utcValue')]",
+				"azPowerShellVersion": "3.0",
+				"timeout": "PT30M",
+				"arguments": "[format(' -rgName {0} -vmName {1} -subID {2}', resourceGroup().name, variables('vmName'), subscription().subscriptionId)]",
+				"scriptContent": "param( [string] [Parameter(Mandatory=$true)] $rgName, [string] [Parameter(Mandatory=$true)] $vmName, [string] [Parameter(Mandatory=$true)] $subID, [string] [Parameter(Mandatory=$true)] $dataDiskName); $ErrorActionPreference = 'Stop'; Set-AzContext -Subscription $subID; Set-AzDefault -ResourceGroupName $rgName; $disk = Get-AzDisk -ResourceGroupName $rgName -DiskName $dataDiskName; $vm = Get-AzVM -Name $vmName -ResourceGroupName $rgName; $vm = Add-AzVMDataDisk -CreateOption Attach -Lun 0 -VM $vm -ManagedDiskId $disk.Id; Update-AzVM -VM $vm -ResourceGroupName $rgName;",
+				"cleanupPreference": "OnSuccess",
+				"retentionInterval": "P1D"
+			}
 		}
 	],
 	"outputs": {
 		"vm-fqdn": {
 			"type": "String",
 			"value": "[reference(variables('publicIPAddressName'), '2020-07-01').dnsSettings.fqdn]"
+		// },
+		// "output1": {
+		// 	"type": "string",
+		// 	"value": "[reference(variables('vmName'), '2020-07-01').)]"
 		}
 	}
 }

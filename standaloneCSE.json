@@ -1,0 +1,58 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"metadata": {
+		"description": "Use script to grab data from the OS and return it.",
+		"author": "Ryan McCallum",
+		"alias": "RYMCCALL",
+		"GitHub": "https://github.com/rjmccallumbigl/Azure-ARM-Templates",
+		"Enablement": "https://docs.microsoft.com/en-us/azure/virtual-machines/linux/quick-create-template",
+		"deploymentLink": "https://labbox.azurewebsites.net/api/Labbox?url=https://raw.githubusercontent.com/rjmccallumbigl/Azure-ARM-Templates/main/grabbingOutputFromaVM.json"
+	},
+	"parameters": {
+		"vmName": {
+			"defaultValue": "LinuxLab5",
+			"type": "string",
+			"metadata": {
+				"description": "Name of the VM we are running CSE on"
+			}
+		},
+		"script": {
+			"defaultValue": "cat /etc/*release",
+			"type": "string",
+			"metadata": {
+				"description": "Script to run on VM and get return value"
+			}
+		}
+	},
+	"variables": {},
+	"resources": [
+		{
+			"apiVersion": "2020-12-01",
+			"type": "Microsoft.Compute/virtualMachines/extensions",
+			"name": "[concat(parameters('vmName'), '/runScript')]",
+			"location": "[resourceGroup().location]",
+			"dependsOn": [
+				"[concat('Microsoft.Compute/virtualMachines/', parameters('vmName'))]",
+				"[parameters('script')]"
+			],
+			"properties": {
+				"publisher": "Microsoft.Compute",
+				"type": "CustomScriptExtension",
+				"typeHandlerVersion": "2.0",
+				"autoUpgradeMinorVersion": true,
+				"settings": {
+					"timestamp": 123456789,
+					"commandToExecute": "[parameters('script')]"
+				},
+				"protectedSettings": {}
+			}
+		}
+	],
+	"outputs": {
+		"returnValue": {
+			"type": "string",
+			"value": "[reference(concat(parameters('vmName'), 'runScript'), '2020-07-01')]"
+		}
+	}
+}
