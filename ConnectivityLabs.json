@@ -440,7 +440,7 @@
 					"imageReference": {
 						"publisher": "MicrosoftWindowsServer",
 						"offer": "WindowsServer",
-						"sku": "2022-Datacenter",
+						"sku": "2016-Datacenter",
 						"version": "latest"
 					},
 					"osDisk": {
@@ -491,7 +491,7 @@
 					"imageReference": {
 						"publisher": "MicrosoftWindowsServer",
 						"offer": "WindowsServer",
-						"sku": "2022-Datacenter",
+						"sku": "2016-Datacenter",
 						"version": "latest"
 					},
 					"osDisk": {
