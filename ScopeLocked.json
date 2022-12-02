@@ -2,11 +2,11 @@
 	"$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
 	"contentVersion": "1.0.0.0",
 	"metadata": {
-		"description": "Prepares a Windows VM.",
+		"description": "Prepares a Windows VM with a lock.",
 		"author": "Courtney Whitley",
 		"alias": "CWHITLEY",
 		"GitHub": "https://github.com/cowhitley/Azure-ARM-Templates",
-		"Enablement": "https://docs.microsoft.com/en-us/azure/virtual-machines/windows/quick-create-template",
+		"Enablement": "https://learn.microsoft.com/en-us/azure/azure-resource-manager/management/lock-resources?tabs=json",
 		"deploymentLink": "https://labbox.azurewebsites.net/api/Labbox?url=https://raw.githubusercontent.com/cowhitley/Azure-ARM-Templates/main/ScopeLocked.json"
 	},
 	"parameters": {
