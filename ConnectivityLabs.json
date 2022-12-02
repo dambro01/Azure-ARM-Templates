@@ -111,9 +111,21 @@
 			"sasToken": "[parameters('_artifactsLocationSasToken')]",
 			"domainName": "[variables('domainName')]"
 		},
-		"adNicIP": "10.0.0.10"
+		"adNicIP": "10.0.0.10",
+		"tagName": "Automation",
+		"tagValue": "Ignore"
 	},
 	"resources": [
+		{
+			"type": "Microsoft.Resources/tags",
+			"name": "default",
+			"apiVersion": "2021-04-01",
+			"properties": {
+				"tags": {
+					"[variables('tagName')]": "[variables('tagValue')]"
+				}
+			}
+		},
 		{
 			"type": "Microsoft.Network/publicIPAddresses",
 			"apiVersion": "2020-08-01",
