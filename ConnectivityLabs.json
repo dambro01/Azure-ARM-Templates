@@ -90,8 +90,6 @@
 		"windowsGroup2": "[sub(variables('windowsVMCount'), add(1, variables('windowsGroup1')))]",
 		"linuxVMCount": 7,
 		"domainName": "corp.contoso.com",
-		// "_artifactsLocation": "https://raw.githubusercontent.com/rjmccallumbigl/Azure-ARM-Templates/main",
-		// "_artifactsLocationSasToken": "",
 		"shortDomainName": "[first(split(variables('domainName'),'.'))]",
 		"assetLocation": "[concat(parameters('_artifactsLocation'),'/DSC')]",
 		"templates": "[concat(parameters('_artifactsLocation'),'/nested')]",
@@ -105,7 +103,7 @@
 		"SharedVmConfig": {
 			"location": "[resourceGroup().location]",
 			"vmSize": "[parameters('vmSize')]",
-			"serverOS": "2016-Datacenter",
+			"serverOS": "2022-Datacenter",
 			"domainUserName": "[concat(variables('shortDomainName'),'\\',parameters('adminUsername'))]",
 			"adminUsername": "[parameters('adminUsername')]",
 			"adminPassword": "[parameters('adminPassword')]",
@@ -430,7 +428,7 @@
 					"imageReference": {
 						"publisher": "MicrosoftWindowsServer",
 						"offer": "WindowsServer",
-						"sku": "2016-Datacenter",
+						"sku": "2022-Datacenter",
 						"version": "latest"
 					},
 					"osDisk": {
@@ -481,7 +479,7 @@
 					"imageReference": {
 						"publisher": "MicrosoftWindowsServer",
 						"offer": "WindowsServer",
-						"sku": "2019-Datacenter",
+						"sku": "2022-Datacenter",
 						"version": "latest"
 					},
 					"osDisk": {
