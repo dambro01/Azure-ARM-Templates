@@ -248,33 +248,33 @@
 				]
 			}
 		},
-		// {
-		// 	"type": "Microsoft.Network/networkInterfaces",
-		// 	"apiVersion": "2020-08-01",
-		// 	"name": "[concat(variables('nicName'), '4')]",
-		// 	"location": "[parameters('location')]",
-		// 	"dependsOn": [
-		// 		"publicIPcopy",
-		// 		"[variables('virtualNetworkName')]"
-		// 	],
-		// 	"properties": {
-		// 		"ipConfigurations": [
-		// 			{
-		// 				"name": "ipconfig1",
-		// 				"properties": {
-		// 					// "privateIPAllocationMethod": "Static",
-		// 					// "privateIPAddress": "[variables('adNicIP')]",
-		// 					"publicIPAddress": {
-		// 						"id": "[resourceId('Microsoft.Network/publicIPAddresses',concat(variables('publicIPAddressName'), '4'))]"
-		// 					},
-		// 					"subnet": {
-		// 						"id": "[variables('subnetRef')]"
-		// 					}
-		// 				}
-		// 			}
-		// 		]
-		// 	}
-		// },
+		{
+			"type": "Microsoft.Network/networkInterfaces",
+			"apiVersion": "2020-08-01",
+			"name": "[concat(variables('nicName'), '4')]",
+			"location": "[parameters('location')]",
+			"dependsOn": [
+				"publicIPcopy",
+				"[variables('virtualNetworkName')]"
+			],
+			"properties": {
+				"ipConfigurations": [
+					{
+						"name": "ipconfig1",
+						"properties": {
+							// "privateIPAllocationMethod": "Static",
+							// "privateIPAddress": "[variables('adNicIP')]",
+							"publicIPAddress": {
+								"id": "[resourceId('Microsoft.Network/publicIPAddresses',concat(variables('publicIPAddressName'), '4'))]"
+							},
+							"subnet": {
+								"id": "[variables('subnetRef')]"
+							}
+						}
+					}
+				]
+			}
+		},
 		{
 			"type": "Microsoft.Network/networkInterfaces",
 			"apiVersion": "2020-08-01",
