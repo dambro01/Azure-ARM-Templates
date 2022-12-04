@@ -1,0 +1,81 @@
+{
+	"apiVersion": "2022-11-01",
+	"location": "eastus",
+	"identity": {
+		"principalId": "28d97b48-9921-4020-97b9-9b64fb78fd74",
+		"tenantId": "72f988bf-86f1-41af-91ab-2d7cd011db47",
+		"type": "SystemAssigned"
+	},
+	"properties": {
+		"vmId": "b484b2ec-5d6f-4769-89bc-f8223a54b36c",
+		"hardwareProfile": {
+			"vmSize": "Standard_D2s_v3"
+		},
+		"storageProfile": {
+			"imageReference": {
+				"publisher": "Canonical",
+				"offer": "UbuntuServer",
+				"sku": "18.04-LTS",
+				"version": "latest",
+				"exactVersion": "18.04.202210180"
+			},
+			"osDisk": {
+				"osType": "Linux",
+				"name": "customscriptLinuxVM_disk1_56310f69f777468686f212f24aeee9ce",
+				"createOption": "FromImage",
+				"caching": "ReadWrite",
+				"managedDisk": {
+					"storageAccountType": "Premium_LRS",
+					"id": "/subscriptions/81d1b603-b602-4534-952e-a8889d3421a1/resourceGroups/Fri_12-02-2022_07-05PM_EST/providers/Microsoft.Compute/disks/customscriptLinuxVM_disk1_56310f69f777468686f212f24aeee9ce"
+				},
+				"deleteOption": "Detach",
+				"diskSizeGB": 30
+			},
+			"dataDisks": []
+		},
+		"osProfile": {
+			"computerName": "customscriptLinuxVM",
+			"adminUsername": "rymccall",
+			"linuxConfiguration": {
+				"disablePasswordAuthentication": true,
+				"ssh": {
+					"publicKeys": [
+						{
+							"path": "/home/rymccall/.ssh/authorized_keys",
+							"keyData": "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC/1PnVTVEP0GhI7B8ypSwIx6P74AhI2LQzrKLnzo2l48/hxLJEMGPN9lG90Rm48kvVbMm3ytKUZ70Rph0zzMf4Wk8ot7l2WzkskTWEXFrMuokfcXNbvkY71AzIDl1Qx8uWcr879sDrQ8BLukeJhweNxSE78xnkXN+j3DJ/lrl47PrKY3Bb6htG8737bYhS8Ihw4g/6w/c2pyMXnKfFIsycdFOEBDVVmHCKaXMbLkMTGye8CCA5Epfj26hO//wDz2sL4WOowHyRu4w6pVfctEAjcZbUdXxz1O/8/KBKOZF32pUxEwEuaVygXGbdryv0a1lCP20TpAy/oua3p6zBERGF rymccall@rymccall-pc01"
+						}
+					]
+				},
+				"provisionVMAgent": true,
+				"patchSettings": {
+					"patchMode": "ImageDefault",
+					"assessmentMode": "ImageDefault"
+				},
+				"enableVMAgentPlatformUpdates": false
+			},
+			"secrets": [],
+			"allowExtensionOperations": true,
+			"requireGuestProvisionSignal": true
+		},
+		"networkProfile": {
+			"networkInterfaces": [
+				{
+					"id": "/subscriptions/81d1b603-b602-4534-952e-a8889d3421a1/resourceGroups/Fri_12-02-2022_07-05PM_EST/providers/Microsoft.Network/networkInterfaces/customscriptLinuxNic"
+				}
+			]
+		},
+		"provisioningState": "Succeeded",
+		"timeCreated": "2022-12-03T00:06:45.7070188+00:00"
+	},
+	"condition": true,
+	"existing": false,
+	"isConditionTrue": true,
+	"subscriptionId": "81d1b603-b602-4534-952e-a8889d3421a1",
+	"resourceGroupName": "Fri_12-02-2022_07-05PM_EST",
+	"scope": "",
+	"resourceId": "Microsoft.Compute/virtualmachines/customscriptLinuxVM",
+	"referenceApiVersion": "2022-11-01",
+	"isTemplateResource": false,
+	"isAction": false,
+	"provisioningOperation": "Read"
+}

@@ -1,0 +1,23 @@
+{
+	"apiVersion": "2022-11-01",
+	"location": "eastus",
+	"properties": {
+		"source": {
+			"script": "cat /etc/*release"
+		},
+		"timeoutInSeconds": 60,
+		"provisioningState": "Succeeded",
+		"asyncExecution": false
+	},
+	"condition": true,
+	"existing": false,
+	"isConditionTrue": true,
+	"subscriptionId": "81d1b603-b602-4534-952e-a8889d3421a1",
+	"resourceGroupName": "Fri_12-02-2022_07-05PM_EST",
+	"scope": "",
+	"resourceId": "Microsoft.Compute/virtualMachines/customscriptLinuxVM/runCommands/injectRunCommand",
+	"referenceApiVersion": "2022-11-01",
+	"isTemplateResource": false,
+	"isAction": false,
+	"provisioningOperation": "Read"
+}

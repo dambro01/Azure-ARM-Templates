@@ -1,0 +1,38 @@
+{
+	"apiVersion": "2022-11-01",
+	"location": "eastus",
+	"properties": {
+		"autoUpgradeMinorVersion": true,
+		"provisioningState": "Succeeded",
+		"instanceView": {
+			"name": "installcustomscript",
+			"type": "Microsoft.Azure.Extensions.CustomScript",
+			"typeHandlerVersion": "2.1.7",
+			"statuses": [
+				{
+					"code": "ProvisioningState/succeeded",
+					"level": "Info",
+					"displayStatus": "Provisioning succeeded",
+					"message": "Enable succeeded: \n[stdout]\nDISTRIB_ID=Ubuntu\nDISTRIB_RELEASE=18.04\nDISTRIB_CODENAME=bionic\nDISTRIB_DESCRIPTION=\"Ubuntu 18.04.6 LTS\"\nNAME=\"Ubuntu\"\nVERSION=\"18.04.6 LTS (Bionic Beaver)\"\nID=ubuntu\nID_LIKE=debian\nPRETTY_NAME=\"Ubuntu 18.04.6 LTS\"\nVERSION_ID=\"18.04\"\nHOME_URL=\"https://www.ubuntu.com/\"\nSUPPORT_URL=\"https://help.ubuntu.com/\"\nBUG_REPORT_URL=\"https://bugs.launchpad.net/ubuntu/\"\nPRIVACY_POLICY_URL=\"https://www.ubuntu.com/legal/terms-and-policies/privacy-policy\"\nVERSION_CODENAME=bionic\nUBUNTU_CODENAME=bionic\n\n[stderr]\n",
+				},
+			],
+		},
+		"publisher": "Microsoft.Azure.Extensions",
+		"type": "CustomScript",
+		"typeHandlerVersion": "2.0",
+		"settings": {
+			"commandToExecute": "cat /etc/*release"
+		},
+	},
+	"condition": true,
+	"existing": false,
+	"isConditionTrue": true,
+	"subscriptionId": "81d1b603-b602-4534-952e-a8889d3421a1",
+	"resourceGroupName": "Fri_12-02-2022_06-54PM_EST",
+	"scope": "",
+	"resourceId": "Microsoft.Compute/virtualmachines/customscriptLinuxVM/extensions/installcustomscript",
+	"referenceApiVersion": "2022-11-01",
+	"isTemplateResource": false,
+	"isAction": false,
+	"provisioningOperation": "Read",
+}
