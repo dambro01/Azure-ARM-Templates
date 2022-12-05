@@ -1,0 +1,343 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"metadata": {
+		"description": "Dual pass encryption.",
+		"author": "Ryan McCallum",
+		"alias": "RYMCCALL",
+		"GitHub": "https://github.com/rjmccallumbigl/Azure-ARM-Templates",
+		"Enablement": "https://github.com/Azure/azure-quickstart-templates/tree/master/quickstarts/microsoft.compute/encrypt-running-linux-vm",
+		"Enablement2": "learn.microsoft.com/en-us/azure/virtual-machines/extensions/azure-disk-enc-linux",
+		"deploymentLink": "https://labbox.azurewebsites.net/api/Labbox?url=https://raw.githubusercontent.com/rjmccallumbigl/Azure-ARM-Templates/main/dualPassEncryption.json"
+	},
+	"parameters": {
+		"adminUsername": {
+			"type": "String",
+			"maxLength": 20,
+			"metadata": {
+				"description": "Username for the Virtual Machine."
+			}
+		},
+		"adminPassword": {
+			"type": "SecureString",
+			"minLength": 12,
+			"metadata": {
+				"description": "Password for the Virtual Machine."
+			}
+		},
+		"vmSize": {
+			"defaultValue": "Standard_B2ms",
+			"type": "String",
+			"metadata": {
+				"description": "Default VM Size"
+			}
+		},
+		"storageUri": {
+			"defaultValue": "[format('store{0}', uniqueString(resourceGroup().id))]",
+			"type": "string",
+			"metadata": {
+				"description": "Name of storage account For Boot Diagnostics"
+			}
+		},
+		"storageAccountType": {
+			"type": "string",
+			"defaultValue": "Standard_LRS",
+			"metadata": {
+				"description": "Storage Account type"
+			}
+		},
+		"keyVaultName": {
+			"type": "string",
+			"metadata": {
+				"description": "Name of the KeyVault to place the volume encryption key."
+			},
+			"defaultValue": "[tolower(concat('kv', uniquestring(resourceGroup().id)))]"
+		},
+		"keyVaultResourceGroup": {
+			"type": "string",
+			"defaultValue": "[resourceGroup().name]",
+			"metadata": {
+				"description": "Resource group of the KeyVault"
+			}
+		},
+		"aadAppName": {
+			"type": "string",
+			"metadata": {
+				"description": "Name of the AAD app used for your dual pass encryption."
+			},
+			"defaultValue": "[tolower(concat('aadapp', uniquestring(resourceGroup().id)))]"
+		},
+		// "keyEncryptionKeyURL": {
+		// 	"type": "string",
+		// 	"defaultValue": "",
+		// 	"metadata": {
+		// 		"description": "URL of the KeyEncryptionKey used to encrypt the volume encryption key"
+		// 	}
+		// },
+		// "keyEncryptionAlgorithm": {
+		// 	"type": "string",
+		// 	"defaultValue": "RSA-OAEP",
+		// 	"metadata": {
+		// 		"description": "keyEncryptionAlgorithm used to wrap volume encryption key using KeyEncryptionKeyURL"
+		// 	}
+		// },
+		"location": {
+			"type": "string",
+			"defaultValue": "[resourceGroup().location]",
+			"metadata": {
+				"description": "Default location"
+			}
+		},
+		"volumeType": {
+			"type": "string",
+			"defaultValue": "All",
+			"metadata": {
+				"description": "Volume type being targeted for encryption operatio"
+			}
+		},
+		"forceUpdateTag": {
+			"type": "string",
+			"defaultValue": "1.0",
+			"metadata": {
+				"description": "Pass in a unique value like a GUID everytime the operation needs to be force run"
+			}
+		},
+		"utcValue": {
+			"defaultValue": "[utcNow()]",
+			"type": "string",
+			"metadata": {
+				"description": "UTC"
+			}
+		}
+	},
+	"variables": {
+		"vmName": "dualPassVM",
+		"nicName": "myVMNic",
+		"addressPrefix": "10.0.0.0/16",
+		"subnetName": "Subnet",
+		"subnetPrefix": "10.0.0.0/24",
+		"virtualNetworkName": "MyVNET",
+		"publicIPAddressName": "myPublicIP",
+		"networkSecurityGroupName": "default-NSG",
+		"subnetRef": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworkName'), variables('subnetName'))]",
+		"extensionName": "AzureDiskEncryptionForLinux",
+		"extensionVersion": "0.1",
+		"encryptionOperation": "EnableEncryption",
+		"keyVaultURL": "[concat('https://', parameters('keyVaultName'))]",
+		"keyVaultResourceID": "[concat(subscription().id,'/resourceGroups/',parameters('keyVaultResourceGroup'),'/providers/Microsoft.KeyVault/vaults/', parameters('keyVaultName'))]",
+		"userIdentity": "[tolower(concat('ui-', uniquestring(resourceGroup().id)))]",
+		"bootstrapRoleAssignmentId": "[guid(concat(resourceGroup().id, 'contributor'))]",
+		"contributorRoleDefinitionId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', 'b24988ac-6180-42a0-ab88-20f7382dd24c')]"
+	},
+	"resources": [
+		{
+			"type": "Microsoft.Network/publicIPAddresses",
+			"apiVersion": "2020-08-01",
+			"name": "[variables('publicIPAddressName')]",
+			"location": "[parameters('location')]",
+			"properties": {
+				"publicIPAllocationMethod": "Dynamic"
+			}
+		},
+		{
+			"type": "Microsoft.Network/networkSecurityGroups",
+			"apiVersion": "2020-08-01",
+			"name": "[variables('networkSecurityGroupName')]",
+			"location": "[parameters('location')]",
+			"properties": {
+				"securityRules": [
+					{
+						"name": "default-allow-22",
+						"properties": {
+							"priority": 1000,
+							"access": "Allow",
+							"direction": "Inbound",
+							"destinationPortRange": "22",
+							"protocol": "Tcp",
+							"sourceAddressPrefix": "*",
+							"sourcePortRange": "*",
+							"destinationAddressPrefix": "*"
+						}
+					}
+				]
+			}
+		},
+		{
+			"type": "Microsoft.Network/virtualNetworks",
+			"apiVersion": "2020-08-01",
+			"name": "[variables('virtualNetworkName')]",
+			"location": "[parameters('location')]",
+			"dependsOn": [
+				"[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSecurityGroupName'))]"
+			],
+			"properties": {
+				"addressSpace": {
+					"addressPrefixes": [
+						"[variables('addressPrefix')]"
+					]
+				},
+				"subnets": [
+					{
+						"name": "[variables('subnetName')]",
+						"properties": {
+							"addressPrefix": "[variables('subnetPrefix')]",
+							"networkSecurityGroup": {
+								"id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSecurityGroupName'))]"
+							}
+						}
+					}
+				]
+			}
+		},
+		{
+			"type": "Microsoft.Network/networkInterfaces",
+			"apiVersion": "2020-08-01",
+			"name": "[variables('nicName')]",
+			"location": "[parameters('location')]",
+			"dependsOn": [
+				"[variables('publicIPAddressName')]",
+				"[variables('virtualNetworkName')]"
+			],
+			"properties": {
+				"ipConfigurations": [
+					{
+						"name": "ipconfig1",
+						"properties": {
+							"privateIPAllocationMethod": "Dynamic",
+							"publicIPAddress": {
+								"id": "[resourceId('Microsoft.Network/publicIPAddresses',variables('publicIPAddressName'))]"
+							},
+							"subnet": {
+								"id": "[variables('subnetRef')]"
+							}
+						}
+					}
+				]
+			}
+		},
+		{
+			"type": "Microsoft.Storage/storageAccounts",
+			"apiVersion": "2021-06-01",
+			"name": "[parameters('storageUri')]",
+			"location": "[parameters('location')]",
+			"sku": {
+				"name": "[parameters('storageAccountType')]"
+			},
+			"kind": "StorageV2",
+			"properties": {}
+		},
+		{
+			"type": "Microsoft.Compute/virtualMachines",
+			"apiVersion": "2020-12-01",
+			"name": "[variables('vmName')]",
+			"location": "[parameters('location')]",
+			"dependsOn": [
+				"[variables('nicName')]"
+			],
+			"properties": {
+				"hardwareProfile": {
+					"vmSize": "[parameters('vmSize')]"
+				},
+				"osProfile": {
+					"computerName": "[variables('vmName')]",
+					"adminUsername": "[parameters('adminUsername')]",
+					"adminPassword": "[parameters('adminPassword')]"
+				},
+				"storageProfile": {
+					"imageReference": {
+						"publisher": "RedHat",
+						"offer": "rhel-raw",
+						"sku": "8-raw",
+						"version": "latest"
+					},
+					"osDisk": {
+						"createOption": "FromImage",
+						"managedDisk": {
+							"storageAccountType": "StandardSSD_LRS"
+						}
+					}
+				},
+				"networkProfile": {
+					"networkInterfaces": [
+						{
+							"id": "[resourceId('Microsoft.Network/networkInterfaces',variables('nicName'))]"
+						}
+					]
+				},
+				"diagnosticsProfile": {
+					"bootDiagnostics": {
+						"enabled": true,
+						"storageUri": "[concat('https://', parameters('storageUri'), '.blob.core.windows.net')]"
+					}
+				}
+			}
+		},
+		{
+			"type": "Microsoft.ManagedIdentity/userAssignedIdentities",
+			"name": "[variables('userIdentity')]",
+			"apiVersion": "2018-11-30",
+			"location": "[parameters('location')]"
+		},
+		{
+			"type": "Microsoft.Authorization/roleAssignments",
+			"apiVersion": "2018-09-01-preview",
+			"name": "[variables('bootstrapRoleAssignmentId')]",
+			"dependsOn": [
+				"[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('userIdentity'))]"
+			],
+			"properties": {
+				"roleDefinitionId": "[variables('contributorRoleDefinitionId')]",
+				"principalId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('userIdentity')), '2018-11-30').principalId]",
+				"principalType": "ServicePrincipal"
+			}
+		},
+		{
+			"type": "Microsoft.Resources/deploymentScripts",
+			"apiVersion": "2020-10-01",
+			"name": "prepareForDualPass",
+			"location": "[parameters('location')]",
+			"dependsOn": [
+				"[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('userIdentity'))]",
+				"[resourceId('Microsoft.Compute/virtualMachines', variables('vmName'))]"
+			],
+			"identity": {
+				"type": "UserAssigned",
+				"userAssignedIdentities": {
+					"[format('{0}', resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('userIdentity')))]": {}
+				}
+			},
+			"kind": "AzurePowerShell",
+			"properties": {
+				"forceUpdateTag": "[parameters('utcValue')]",
+				"azPowerShellVersion": "9.0",
+				"timeout": "PT30M",
+				"arguments": "[format(' -resourceGroupName {0} -keyVaultName {1} -location {2} -subscriptionId {3} -aadAppName {4}', resourceGroup().name, parameters('keyVaultName'), resourceGroup().location, subscription().subscriptionId, parameters('aadAppName'))]",
+				"scriptContent": "Param( [Parameter(Mandatory = $true, HelpMessage= 'Name of the resource group to which the KeyVault belongs to. A new resource group with this name will be created if one doesn''t exist')] [ValidateNotNullOrEmpty()] [string]$resourceGroupName, [Parameter(Mandatory = $true, HelpMessage= 'Name of the KeyVault in which encryption keys are to be placed. A new vault with this name will be created if one doesn''t exist ')] [ValidateNotNullOrEmpty()] [string]$keyVaultName, [Parameter(Mandatory = $true, HelpMessage= 'Location of the KeyVault. Important note: Make sure the KeyVault and VMs to be encrypted are in the same region / location. ')] [ValidateNotNullOrEmpty()] [string]$location, [Parameter(Mandatory = $false, HelpMessage= 'Identifier of the Azure subscription to be used ')] [ValidateNotNullOrEmpty()] [string]$subscriptionId, [Parameter(Mandatory = $false, HelpMessage= 'Name of the AAD application that will be used to write secrets to KeyVault. A new application with this name will be created if one doesn''t exist. If this app already exists, pass aadClientSecret parameter to the script ')] [ValidateNotNullOrEmpty()] [string]$aadAppName, [Parameter(Mandatory = $false, HelpMessage= 'Client secret of the AAD application that was created earlier ')] [ValidateNotNullOrEmpty()] [string]$aadClientSecret, [Parameter(Mandatory = $false, HelpMessage= 'Name of optional key encryption key in KeyVault. A new key with this name will be created if one doesn''t exist ')] [ValidateNotNullOrEmpty()] [string]$keyEncryptionKeyName);Start-Transcript -Path 'transcript.log' -Force; try { $VerbosePreference = 'Continue';$ErrorActionPreference = 'Stop'; $SvcPrincipals = (Get-AzADServicePrincipal -SearchString $aadAppName); if(-not $SvcPrincipals) { $identifierUri = [string]::Format(\"http://localhost:8080/{0}\",[Guid]::NewGuid().ToString('N')); $defaultHomePage = 'http://contoso.com'; $now = [System.DateTime]::Now; $oneYearFromNow = $now.AddYears(1); $aadClientSecret = [Guid]::NewGuid().ToString(); Write-Host 'Creating new AAD application ($aadAppName) '; $secureAadClientSecret = ConvertTo-SecureString -String $aadClientSecret -AsPlainText -Force; $ADApp = New-AzADApplication -DisplayName $aadAppName -HomePage $defaultHomePage -StartDate $now -EndDate $oneYearFromNow; $servicePrincipal = New-AzADServicePrincipal -AppId $ADApp.AppId; $SvcPrincipals = (Get-AzADServicePrincipal -SearchString $aadAppName); if(-not $SvcPrincipals) { Write-Error 'Failed to create AAD app $aadAppName. Please log in to Azure using Connect-AzAccount and try again '; return; } $aadClientID = $servicePrincipal.AppId; Write-Host 'Created a new AAD Application ($aadAppName) with ID: $aadClientID '; } else { if(-not $aadClientSecret) { Write-Error 'Aad application ($aadAppName) was already created. Re-run the script by supplying aadClientSecret parameter with corresponding secret from https://manage.windowsazure.com portal '; return; } $aadClientID = $SvcPrincipals[0].AppId; } Try { $resGroup = Get-AzResourceGroup -Name $resourceGroupName -ErrorAction SilentlyContinue; } Catch [System.ArgumentException] { Write-Host 'Couldn''t find resource group: ($resourceGroupName) '; $resGroup = $null; } if (-not $resGroup) { Write-Host 'Creating new resource group: ($resourceGroupName) '; $resGroup = New-AzResourceGroup -Name $resourceGroupName -Location $location; Write-Host 'Created a new resource group named $resourceGroupName to place keyVault '; } Try { $keyVault = Get-AzKeyVault -VaultName $keyVaultName -ErrorAction SilentlyContinue; } Catch [System.ArgumentException] { Write-Host 'Couldn''t find Key Vault: $keyVaultName '; $keyVault = $null; } if (-not $keyVault) { Write-Host 'Creating new key vault: ($keyVaultName) '; $keyVault = New-AzKeyVault -VaultName $keyVaultName -ResourceGroupName $resourceGroupName -Sku Standard -Location $location; Write-Host 'Created a new KeyVault named $keyVaultName to store encryption keys '; } if($aadAppName) { Set-AzKeyVaultAccessPolicy -VaultName $keyVaultName -ServicePrincipalName $aadClientID -PermissionsToKeys wrapKey -PermissionsToSecrets set; } Set-AzKeyVaultAccessPolicy -VaultName $keyVaultName -EnabledForDiskEncryption; Write-Host 'Enabling Soft Delete on KeyVault $keyVaultName '; $resource = Get-AzResource -ResourceId $keyVault.ResourceId; $resource.Properties | Add-Member -MemberType 'NoteProperty' -Name 'enableSoftDelete' -Value 'true' -Force; Set-AzResource -resourceid $resource.ResourceId -Properties $resource.Properties -Force; Write-Host 'Adding resource lock on KeyVault $keyVaultName '; $lockNotes = 'KeyVault may contain AzureDiskEncryption secrets required to boot encrypted VMs '; New-AzResourceLock -LockLevel CanNotDelete -LockName 'LockKeyVault' -ResourceName $resource.Name -ResourceType $resource.ResourceType -ResourceGroupName $resource.ResourceGroupName -LockNotes $lockNotes -Force; $diskEncryptionKeyVaultUrl = $keyVault.VaultUri; $keyVaultResourceId = $keyVault.ResourceId; if($keyEncryptionKeyName) { Try { $kek = Get-AzKeyVaultKey -VaultName $keyVaultName -Name $keyEncryptionKeyName -ErrorAction SilentlyContinue; } Catch [Microsoft.Azure.KeyVault.KeyVaultClientException] { Write-Host 'Couldn''t find key encryption key named : $keyEncryptionKeyName in Key Vault: $keyVaultName '; $kek = $null; } if(-not $kek) { Write-Host 'Creating new key encryption key named:$keyEncryptionKeyName in Key Vault: $keyVaultName '; $kek = Add-AzKeyVaultKey -VaultName $keyVaultName -Name $keyEncryptionKeyName -Destination Software -ErrorAction SilentlyContinue; Write-Host 'Created key encryption key named:$keyEncryptionKeyName in Key Vault: $keyVaultName '; } $keyEncryptionKeyUrl = $kek.Key.Kid; } Write-Host 'Please note down below details that will be needed to enable encryption on your VMs ' -foregroundcolor Green; if($aadAppName) { Write-Host '``t aadClientID: $aadClientID ' -foregroundcolor Green; Write-Host '``t aadClientSecret: $aadClientSecret ' -foregroundcolor Green; } Write-Host '``t DiskEncryptionKeyVaultUrl: $diskEncryptionKeyVaultUrl ' -foregroundcolor Green; Write-Host '``t DiskEncryptionKeyVaultId: $keyVaultResourceId ' -foregroundcolor Green; if($keyEncryptionKeyName) { Write-Host '``t KeyEncryptionKeyURL: $keyEncryptionKeyUrl ' -foregroundcolor Green; Write-Host '``t KeyEncryptionKeyVaultId: $keyVaultResourceId' -foregroundcolor Green; } $allVMs = Get-AzVm -ResourceGroupName $resourceGroupName; foreach($vm in $allVMs) { if($vm.Location.ToLower() -ne $keyVault.Location.ToLower()) { Write-Error 'To enable AzureDiskEncryption, VM and KeyVault must belong to same subscription and same region. vm Location: $($vm.Location.ToLower()) , keyVault Location: $($keyVault.Location.ToLower())'; return; } Write-Host 'Encrypting VM: $($vm.Name) in ResourceGroup: $($vm.ResourceGroupName)' -foregroundcolor Green; if($aadAppName) { if(-not $kek) { Set-AzVMDiskEncryptionExtension -ResourceGroupName $vm.ResourceGroupName -VMName $vm.Name -AadClientID $aadClientID -AadClientSecret $aadClientSecret -DiskEncryptionKeyVaultUrl $diskEncryptionKeyVaultUrl -DiskEncryptionKeyVaultId $keyVaultResourceId -VolumeType 'All'; } else { Set-AzVMDiskEncryptionExtension -ResourceGroupName $vm.ResourceGroupName -VMName $vm.Name -AadClientID $aadClientID -AadClientSecret $aadClientSecret -DiskEncryptionKeyVaultUrl $diskEncryptionKeyVaultUrl -DiskEncryptionKeyVaultId $keyVaultResourceId -KeyEncryptionKeyUrl $keyEncryptionKeyUrl -KeyEncryptionKeyVaultId $keyVaultResourceId -VolumeType 'All'; } } else { if(-not $kek) { Set-AzVMDiskEncryptionExtension -ResourceGroupName $vm.ResourceGroupName -VMName $vm.Name -DiskEncryptionKeyVaultUrl $diskEncryptionKeyVaultUrl -DiskEncryptionKeyVaultId $keyVaultResourceId -VolumeType 'All'; } else { Set-AzVMDiskEncryptionExtension -ResourceGroupName $vm.ResourceGroupName -VMName $vm.Name -DiskEncryptionKeyVaultUrl $diskEncryptionKeyVaultUrl -DiskEncryptionKeyVaultId $keyVaultResourceId -KeyEncryptionKeyUrl $keyEncryptionKeyUrl -KeyEncryptionKeyVaultId $keyVaultResourceId -VolumeType 'All'; } } Get-AzVmDiskEncryptionStatus -ResourceGroupName $vm.ResourceGroupName -VMName $vm.Name; } } catch { echo $_;  Stop-transcript; cat transcript.log; } ",
+				"cleanupPreference": "OnSuccess",
+				"retentionInterval": "P1D"
+			}
+		// },
+		// {
+		// "type": "Microsoft.Compute/virtualMachines/extensions",
+		// "apiVersion": "2020-12-01",
+		// "location": "[parameters('location')]",
+		// "name": "[concat(parameters('vmName'),'/diskEncryption')]",
+		// "properties": {
+		// "publisher": "Microsoft.Azure.Security",
+		// "type": "[variables('extensionName')]",
+		// "typeHandlerVersion": "[variables('extensionVersion')]",
+		// "autoUpgradeMinorVersion": true,
+		// "forceUpdateTag": "[parameters('forceUpdateTag')]",
+		// "settings": {
+		// "EncryptionOperation": "[variables('encryptionOperation')]",
+		// "KeyVaultURL": "[variables('keyVaultURL')]",
+		// "KeyVaultResourceId": "[variables('keyVaultResourceID')]",
+		// "KeyEncryptionKeyURL": "[parameters('keyEncryptionKeyURL')]",
+		// "KekVaultResourceId": "[if(empty(parameters('keyEncryptionKeyURL')),'',variables('keyVaultResourceID'))]",
+		// "KeyEncryptionAlgorithm": "[parameters('keyEncryptionAlgorithm')]",
+		// "VolumeType": "[parameters('volumeType')]"
+		// }
+		// }
+		}
+	]
+}
