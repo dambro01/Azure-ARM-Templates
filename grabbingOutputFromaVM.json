@@ -8,15 +8,19 @@
 			"metadata": {
 				"description": "The command to execute."
 			}
+		},
+		"vmName": {
+			"type": "string",
+			"metadata": {
+				"description": "Name of the VM we are running CSE on"
+			},
+			"defaultValue": "LinuxLab5"
 		}
-	},
-	"variables": {
-		"vmName": "customscriptLinuxVM"
 	},
 	"resources": [
 		{
 			"type": "Microsoft.Compute/virtualMachines/extensions",
-			"name": "[concat(variables('vmName'),'/installcustomscript')]",
+			"name": "[concat(parameters('vmName'),'/installcustomscript')]",
 			"apiVersion": "2020-12-01",
 			"location": "[resourceGroup().location]",
 			"properties": {
@@ -33,7 +37,7 @@
 	"outputs": {
 		"CSEOutput": {
 			"type": "string",
-			"value": "[reference(resourceId('Microsoft.Compute/virtualmachines/extensions', variables('vmName'), 'installcustomscript'), '2022-11-01').instanceView.statuses[0].message]"
+			"value": "[reference(resourceId('Microsoft.Compute/virtualmachines/extensions', parameters('vmName'), 'installcustomscript'), '2022-11-01').instanceView.statuses[0].message]"
 		}
 	}
 }

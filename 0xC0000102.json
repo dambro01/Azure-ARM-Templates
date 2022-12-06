@@ -407,8 +407,8 @@
 			}
 		},
 		{
-			"type": "Microsoft.Compute/virtualMachines/runCommands",
-			"apiVersion": "2021-11-01",
+			"type": "Microsoft.Compute/virtualMachines/extensions",
+			"apiVersion": "2019-03-01",
 			"name": "[concat('rhelVM','/modifyWindowsDisk')]",
 			"location": "[resourceGroup().location]",
 			"dependsOn": [
@@ -417,10 +417,16 @@
 				"[resourceId('Microsoft.Compute/virtualMachines', 'rhelVM')]"
 			],
 			"properties": {
-				"source": {
-					"scriptUri": "https://raw.githubusercontent.com/rjmccallumbigl/Azure-ARM-Templates/main/Scripts/attachWindowsDisk.sh"
-				},
-				"timeoutInSeconds": 120
+				"publisher": "Microsoft.Compute",
+				"type": "CustomScriptExtension",
+				"typeHandlerVersion": "1.9",
+				"autoUpgradeMinorVersion": true,
+				"protectedSettings": {
+					"commandToExecute": "sudo sh attachWindowsDisk.sh",
+					"fileUris": [
+						"https://raw.githubusercontent.com/rjmccallumbigl/Azure-ARM-Templates/main/Scripts/attachWindowsDisk.sh"
+					]
+				}
 			}
 		},
 		{
