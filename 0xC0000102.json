@@ -435,7 +435,7 @@
 			"location": "[resourceGroup().location]",
 			"apiVersion": "2019-03-01",
 			"dependsOn": [
-				"[resourceId('Microsoft.Compute/virtualMachines/runCommands', 'rhelVM', 'modifyWindowsDisk')]"
+				"[resourceId('Microsoft.Compute/virtualMachines/extensions', 'rhelVM', 'modifyWindowsDisk')]"
 			],
 			"properties": {
 				"publisher": "Microsoft.Azure.Extensions",
@@ -456,7 +456,7 @@
 			"name": "osDiskSwap",
 			"location": "[parameters('location')]",
 			"dependsOn": [
-				"[resourceId('Microsoft.Compute/virtualMachines/runCommands', 'rhelVM', 'modifyWindowsDisk')]",
+				"[resourceId('Microsoft.Compute/virtualMachines/extensions', 'rhelVM', 'modifyWindowsDisk')]",
 				"[resourceId('Microsoft.Compute/virtualMachines/extensions', 'rhelVM', 'runLinuxScriptinCSE')]"
 			],
 			"identity": {
