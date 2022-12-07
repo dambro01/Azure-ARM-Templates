@@ -15,12 +15,20 @@
 				"description": "Name of the VM we are running CSE on"
 			},
 			"defaultValue": "LinuxLab5"
+		},
+		"utcValue": {
+			"defaultValue": "[utcNow()]",
+			"type": "string",
+			"metadata": {
+				"description": "UTC"
+			}
 		}
+
 	},
 	"resources": [
 		{
 			"type": "Microsoft.Compute/virtualMachines/extensions",
-			"name": "[concat(parameters('vmName'),'/installcustomscript')]",
+			"name": "[concat(parameters('vmName'), '/installcustomscript', parameters('utcValue'))]",
 			"apiVersion": "2020-12-01",
 			"location": "[resourceGroup().location]",
 			"properties": {

@@ -417,9 +417,9 @@
 				"[resourceId('Microsoft.Compute/virtualMachines', 'rhelVM')]"
 			],
 			"properties": {
-				"publisher": "Microsoft.Compute",
-				"type": "CustomScriptExtension",
-				"typeHandlerVersion": "1.9",
+				"publisher": "Microsoft.Azure.Extensions",
+				"type": "CustomScript",
+				"typeHandlerVersion": "2.1",
 				"autoUpgradeMinorVersion": true,
 				"protectedSettings": {
 					"commandToExecute": "sudo sh attachWindowsDisk.sh",

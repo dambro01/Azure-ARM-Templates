@@ -216,21 +216,6 @@
 					}
 				}
 			}
-			// },
-			// {
-			// 	"type": "Microsoft.Compute/virtualMachines/runCommands",
-			// 	"apiVersion": "2021-11-01",
-			// 	"name": "[concat(variables('vmName'),'/generalizeWithRunCommand')]",
-			// 	"location": "[resourceGroup().location]",
-			// 	"dependsOn": [
-			// 		"[resourceId('Microsoft.Compute/virtualMachines', variables('vmName'))]"
-			// 	],
-			// 	"properties": {
-			// 		"source": {
-			// 			"script": "[concat('& \"$env:windir\\system32\\sysprep\\Sysprep.exe\" /generalize /reboot /oobe;')]"
-			// 		},
-			// 		"timeoutInSeconds": 60
-			// 	}
 		}
 	],
 	"outputs": {
