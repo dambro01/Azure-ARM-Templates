@@ -275,27 +275,7 @@
 						"storageUri": "[concat('https://', parameters('storageUri'), '.blob.core.windows.net')]"
 					}
 				}
-			},
-			"resources": [
-				// {
-				// 	"type": "extensions",
-				// 	"apiVersion": "2020-12-01",
-				// 	"name": "CustomScriptExtension",
-				// 	"location": "[parameters('location')]",
-				// 	"dependsOn": [
-				// 		"[variables('vmName')]"
-				// 	],
-				// 	"properties": {
-				// 		"publisher": "Microsoft.Compute",
-				// 		"type": "CustomScriptExtension",
-				// 		"typeHandlerVersion": "1.8",
-				// 		"autoUpgradeMinorVersion": true,
-				// 		"settings": {
-				// 			"commandToExecute": "powershell Set-Service -Name 'SACDRV' -StartupType Disabled; powershell Restart-Computer -Force"
-				// 		}
-				// 	}
-				// }
-			]
+			}
 		},
 		{
 			"type": "Microsoft.Compute/virtualMachines",
@@ -398,7 +378,7 @@
 			"kind": "AzurePowerShell",
 			"properties": {
 				"forceUpdateTag": "[parameters('utcValue')]",
-				"azPowerShellVersion": "3.0",
+				"azPowerShellVersion": "9.0",
 				"timeout": "PT30M",
 				"arguments": "[format(' -rgName {0} -vmName {1} -subID {2} -dataDiskName {3}', resourceGroup().name, 'rhelVM', subscription().subscriptionId, 'snapshotDisk')]",
 				"scriptContent": "param( [string] [Parameter(Mandatory=$true)] $rgName, [string] [Parameter(Mandatory=$true)] $vmName, [string] [Parameter(Mandatory=$true)] $subID, [string] [Parameter(Mandatory=$true)] $dataDiskName); $ErrorActionPreference = 'Stop'; Set-AzContext -Subscription $subID; Set-AzDefault -ResourceGroupName $rgName; $disk = Get-AzDisk -ResourceGroupName $rgName -DiskName $dataDiskName; $vm = Get-AzVM -Name $vmName -ResourceGroupName $rgName; $vm = Add-AzVMDataDisk -CreateOption Attach -Lun 0 -VM $vm -ManagedDiskId $disk.Id; Update-AzVM -VM $vm -ResourceGroupName $rgName;",
@@ -407,8 +387,8 @@
 			}
 		},
 		{
-			"type": "Microsoft.Compute/virtualMachines/extensions",
-			"apiVersion": "2019-03-01",
+			"type": "Microsoft.Compute/virtualMachines/runCommands",
+			"apiVersion": "2021-11-01",
 			"name": "[concat('rhelVM','/modifyWindowsDisk')]",
 			"location": "[resourceGroup().location]",
 			"dependsOn": [
@@ -417,16 +397,12 @@
 				"[resourceId('Microsoft.Compute/virtualMachines', 'rhelVM')]"
 			],
 			"properties": {
-				"publisher": "Microsoft.Azure.Extensions",
-				"type": "CustomScript",
-				"typeHandlerVersion": "2.1",
-				"autoUpgradeMinorVersion": true,
-				"protectedSettings": {
-					"commandToExecute": "sudo sh attachWindowsDisk.sh",
-					"fileUris": [
-						"https://raw.githubusercontent.com/rjmccallumbigl/Azure-ARM-Templates/main/Scripts/attachWindowsDisk.sh"
-					]
-				}
+				"source": {
+					// "script": "",
+					"commandId": "RunShellScript",
+					"scriptUri": "https://raw.githubusercontent.com/rjmccallumbigl/Azure-ARM-Templates/main/Scripts/attachWindowsDisk.sh"
+				},
+				"timeoutInSeconds": 120
 			}
 		},
 		{
@@ -435,7 +411,7 @@
 			"location": "[resourceGroup().location]",
 			"apiVersion": "2019-03-01",
 			"dependsOn": [
-				"[resourceId('Microsoft.Compute/virtualMachines/extensions', 'rhelVM', 'modifyWindowsDisk')]"
+				"[resourceId('Microsoft.Compute/virtualMachines/runCommands', 'rhelVM', 'modifyWindowsDisk')]"
 			],
 			"properties": {
 				"publisher": "Microsoft.Azure.Extensions",
@@ -456,7 +432,7 @@
 			"name": "osDiskSwap",
 			"location": "[parameters('location')]",
 			"dependsOn": [
-				"[resourceId('Microsoft.Compute/virtualMachines/extensions', 'rhelVM', 'modifyWindowsDisk')]",
+				"[resourceId('Microsoft.Compute/virtualMachines/runCommands', 'rhelVM', 'modifyWindowsDisk')]",
 				"[resourceId('Microsoft.Compute/virtualMachines/extensions', 'rhelVM', 'runLinuxScriptinCSE')]"
 			],
 			"identity": {
