@@ -55,11 +55,13 @@
 	},
 	"variables": {
 		"nicName": "myVMNic",
-		"addressPrefix": "10.2.0.0/24",
-		"subnetName": "Subnet",
+		"addressPrefix": "10.0.0.0/8",
+		"subnetName": "Subnet1",
+		"subnetName2": "Subnet2",
 		"subnetPrefix": "10.0.0.0/28",
 		"subnetPrefix2": "10.0.0.16/28",
 		"subnetRef": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworkName'), variables('subnetName'))]",
+		"subnetRef2": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworkName'), variables('subnetName2'))]",
 		"vmName": "rhel2NicsVM",
 		"virtualNetworkName": "MyVNET",
 		"publicIPAddressName": "myPublicIP",
@@ -132,7 +134,7 @@
 						}
 					},
 					{
-						"name": "[concat(variables('subnetName'),'2')]",
+						"name": "[variables('subnetName2')]",
 						"properties": {
 							"addressPrefix": "[variables('subnetPrefix2')]",
 							"networkSecurityGroup": {
@@ -181,14 +183,14 @@
 			"properties": {
 				"ipConfigurations": [
 					{
-						"name": "ipconfig2",
+						"name": "ipconfig1",
 						"properties": {
 							"privateIPAllocationMethod": "Dynamic",
 							"publicIPAddress": {
 								"id": "[resourceId('Microsoft.Network/publicIPAddresses',concat(variables('publicIPAddressName'),'2'))]"
 							},
 							"subnet": {
-								"id": "[concat(variables('subnetRef'),'2')]"
+								"id": "[variables('subnetRef2')]"
 							}
 						}
 					}

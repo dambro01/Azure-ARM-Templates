@@ -398,9 +398,9 @@
 			],
 			"properties": {
 				"source": {
-					// "script": "",
-					"commandId": "RunShellScript",
-					"scriptUri": "https://raw.githubusercontent.com/rjmccallumbigl/Azure-ARM-Templates/main/Scripts/attachWindowsDisk.sh"
+					"script": "mkdir /datadrive | tee -a /tmp/scriptResults.txt; partition=$(lsblk -f -i -l | grep Windows | grep -o '^sd\\w*\b'); echo \"$partition\" | tee -a /tmp/scriptResults.txt; sudo subscription-manager repos --enable codeready-builder-for-rhel-8-$(arch)-rpms | tee -a /tmp/scriptResults.txt; sudo dnf install https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm -y | tee -a /tmp/scriptResults.txt; sudo yum install ntfs-3g -y | tee -a /tmp/scriptResults.txt; sudo yum install ntfsprogs -y | tee -a /tmp/scriptResults.txt; sudo ntfsfix /dev/\"$partition\" | tee -a /tmp/scriptResults.txt; sudo mount -t ntfs-3g /dev/\"$partition\" /datadrive | tee -a /tmp/scriptResults.txt; mv /datadrive/Windows/System32/drivers/intelide.sys ~/intelide.sys -f | tee -a /tmp/scriptResults.txt;"
+					// "commandId": "RunShellScript",
+					// "scriptUri": "https://raw.githubusercontent.com/rjmccallumbigl/Azure-ARM-Templates/main/Scripts/attachWindowsDisk.sh"
 				},
 				"timeoutInSeconds": 120
 			}
