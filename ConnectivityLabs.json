@@ -85,7 +85,7 @@
 		"virtualNetworkName": "MyVNET",
 		"publicIPAddressName": "myPublicIP",
 		"networkSecurityGroupName": "default-NSG",
-		"windowsVMCount": 15,
+		"windowsVMCount": 14,
 		"windowsGroup1": 3,
 		"windowsGroup2": "[sub(variables('windowsVMCount'), add(1, variables('windowsGroup1')))]",
 		"linuxVMCount": 7,
@@ -692,7 +692,7 @@
 			],
 			"properties": {
 				"source": {
-					"script": "bcdedit /delete '{bootmgr}' /f; Restart-Computer -Force;"
+					"script": "bcdedit /delete '{bootmgr}' /f; Restart-Computer;"
 				},
 				"timeoutInSeconds": 60
 			}
@@ -708,7 +708,7 @@
 			],
 			"properties": {
 				"source": {
-					"script": "Start-Process powershell -Verb runAs -ArgumentList {bcdedit /delete '{current}' /f; Restart-Computer -Force}"
+					"script": "Start-Process powershell -Verb runAs -ArgumentList {bcdedit /delete '{current}' /f; Restart-Computer}"
 				},
 				"timeoutInSeconds": 60
 			}
@@ -724,7 +724,7 @@
 			],
 			"properties": {
 				"source": {
-					"script": "Start-Process powershell -Verb runAs -ArgumentList { Get-Partition -DriveLetter F | Set-Partition -NewDriveLetter Y; Restart-Computer -Force; }"
+					"script": "Start-Process powershell -Verb runAs -ArgumentList { Get-Partition -DriveLetter F | Set-Partition -NewDriveLetter Y; Restart-Computer; }"
 				},
 				"timeoutInSeconds": 60
 			}
@@ -757,7 +757,7 @@
 			],
 			"properties": {
 				"source": {
-					"script": "Start-Process powershell -Verb runAs -ArgumentList {Start-Sleep 60; Stop-Service -Name \"dhcp\" -Force; Set-Service -Name \"dhcp\" -StartupType Disabled; Restart-Computer -Force;}"
+					"script": "Start-Process powershell -Verb runAs -ArgumentList {Start-Sleep 60; Stop-Service -Name \"dhcp\" -Force; Set-Service -Name \"dhcp\" -StartupType Disabled; Restart-Computer;}"
 				},
 				"timeoutInSeconds": 60
 			}
@@ -773,7 +773,7 @@
 			],
 			"properties": {
 				"source": {
-					"script": "Start-Process powershell -Verb runAs -ArgumentList {bcdedit /set safeboot minimal; Restart-Computer -Force;}"
+					"script": "Start-Process powershell -Verb runAs -ArgumentList {bcdedit /set safeboot minimal; Restart-Computer;}"
 				},
 				"timeoutInSeconds": 60
 			}
@@ -789,7 +789,7 @@
 			],
 			"properties": {
 				"source": {
-					"script": "Get-NetFirewallrule -DisplayName \"Remote Desktop - User Mode (TCP-In)\" | Get-NetFirewallAddressFilter | Set-NetFirewallAddressFilter -RemoteAddress 192.168.1.10; bcdedit /ems '{current}' off; Restart-Computer -Force;"
+					"script": "Get-NetFirewallrule -DisplayName \"Remote Desktop - User Mode (TCP-In)\" | Get-NetFirewallAddressFilter | Set-NetFirewallAddressFilter -RemoteAddress 192.168.1.10; bcdedit /ems '{current}' off; Restart-Computer;"
 				},
 				"timeoutInSeconds": 60
 			}
@@ -805,7 +805,7 @@
 			],
 			"properties": {
 				"source": {
-					"script": "Start-Process powershell -Verb runAs -ArgumentList {Set-ItemProperty -Path 'HKLM:\\SYSTEM\\CurrentControlSet\\Services\\TermService\\Parameters' -name 'ServiceDll' '%SystemRoot%\\System32\\rdp.dll' -Type ExpandString; Restart-Computer -Force}"
+					"script": "Start-Process powershell -Verb runAs -ArgumentList {Set-ItemProperty -Path 'HKLM:\\SYSTEM\\CurrentControlSet\\Services\\TermService\\Parameters' -name 'ServiceDll' '%SystemRoot%\\System32\\rdp.dll' -Type ExpandString; Restart-Computer}"
 				},
 				"timeoutInSeconds": 60
 			}
@@ -821,7 +821,7 @@
 			],
 			"properties": {
 				"source": {
-					"script": "Start-Process powershell -Verb runAs -ArgumentList { cmd /c 'sc config rdagent start= disabled && sc stop rdagent && sc config WindowsAzureGuestAgent start= disabled && sc stop WindowsAzureGuestAgent && sc delete rdagent && sc delete WindowsAzureGuestAgent'; Get-Process -Name 'WaAppAgent.exe' | Stop-Process;Get-Process -Name 'WaSecAgentProv.exe' | Stop-Process;Get-Process -Name 'WindowsAzureGuestAgent.exe' | Stop-Process; Get-ChildItem 'C:\\WindowsAzure\\' -File -recurse | Sort-Object FullName -Descending | Remove-Item -recurse -force -confirm:$false;Get-ChildItem 'C:\\WindowsAzure\\*' -Directory -recurse | Sort-Object FullName -Descending | Remove-Item -recurse -force -confirm:$false; Remove-Item 'C:\\WindowsAzure\\' -recurse -force -confirm:$false; cmd /c \"del /f /s /q 'C:\\WindowsAzure\\'\"; Add-Type -AssemblyName System.Web; $RandPassw = [System.Web.Security.Membership]::GeneratePassword(8,2); net user (Get-LocalUser | Where-Object { $_.Enabled }).Name $RandPassw; Restart-Computer -Force}"
+					"script": "Start-Process powershell -Verb runAs -ArgumentList { cmd /c 'sc config rdagent start= disabled && sc stop rdagent && sc config WindowsAzureGuestAgent start= disabled && sc stop WindowsAzureGuestAgent && sc delete rdagent && sc delete WindowsAzureGuestAgent'; Get-Process -Name 'WaAppAgent.exe' | Stop-Process;Get-Process -Name 'WaSecAgentProv.exe' | Stop-Process;Get-Process -Name 'WindowsAzureGuestAgent.exe' | Stop-Process; Get-ChildItem 'C:\\WindowsAzure\\' -File -recurse | Sort-Object FullName -Descending | Remove-Item -recurse -force -confirm:$false;Get-ChildItem 'C:\\WindowsAzure\\*' -Directory -recurse | Sort-Object FullName -Descending | Remove-Item -recurse -force -confirm:$false; Remove-Item 'C:\\WindowsAzure\\' -recurse -force -confirm:$false; cmd /c \"del /f /s /q 'C:\\WindowsAzure\\'\"; Add-Type -AssemblyName System.Web; $RandPassw = [System.Web.Security.Membership]::GeneratePassword(8,2); net user (Get-LocalUser | Where-Object { $_.Enabled }).Name $RandPassw; Restart-Computer}"
 				},
 				"timeoutInSeconds": 60
 			}
@@ -891,7 +891,7 @@
 			],
 			"properties": {
 				"source": {
-					"script": "reg add \"HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Winlogon\" /v Userinit /t REG_SZ /d BrokenUserInit.exe /f; Restart-Computer -Force;"
+					"script": "reg add \"HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Winlogon\" /v Userinit /t REG_SZ /d BrokenUserInit.exe /f; Restart-Computer;"
 				},
 				"timeoutInSeconds": 60
 			}
@@ -907,14 +907,14 @@
 			],
 			"properties": {
 				"source": {
-					"script": "New-Item -Path \"HKLM:\\Software\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\" -Name \"Citrix\";Set-ItemProperty -Path \"HKLM:\\Software\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Citrix\" -Name \"DisplayName\" -Value \"Citrix\"; Set-ItemProperty -Path \"HKLM:\\Software\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Citrix\" -Name \"DisplayVersion\" -Value 2.00.4333; Set-ItemProperty -Path \"HKLM:\\Software\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Citrix\" -Name \"InstallDate\" -Value 20200210;Set-ItemProperty -Path \"HKLM:\\Software\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Citrix\" -Name \"Publisher\" -Value \"Citrix\";reg add \"HKLM\\SYSTEM\\CurrentControlSet\\control\\Terminal Server\\Winstations\\RDP-Tcp\" /v LoadableProtocol_Object /t REG_SZ /d \"RPM.CtxRdpProtocolManager\" /f; Restart-Computer -force;"
+					"script": "New-Item -Path \"HKLM:\\Software\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\" -Name \"Citrix\";Set-ItemProperty -Path \"HKLM:\\Software\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Citrix\" -Name \"DisplayName\" -Value \"Citrix\"; Set-ItemProperty -Path \"HKLM:\\Software\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Citrix\" -Name \"DisplayVersion\" -Value 2.00.4333; Set-ItemProperty -Path \"HKLM:\\Software\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Citrix\" -Name \"InstallDate\" -Value 20200210;Set-ItemProperty -Path \"HKLM:\\Software\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Citrix\" -Name \"Publisher\" -Value \"Citrix\";reg add \"HKLM\\SYSTEM\\CurrentControlSet\\control\\Terminal Server\\Winstations\\RDP-Tcp\" /v LoadableProtocol_Object /t REG_SZ /d \"RPM.CtxRdpProtocolManager\" /f; Restart-Computer;"
 				},
 				"timeoutInSeconds": 60
 			}
 		},
 		{
 			// 👍🏿
-			"name": "[concat(variables('linuxVMName'), '1', '/injectRunCommand')]",
+			"name": "[concat(variables('linuxVMName'), '1', '/injectCSE')]",
 			"type": "Microsoft.Compute/virtualMachines/extensions",
 			"location": "[resourceGroup().location]",
 			"apiVersion": "2019-03-01",
@@ -936,7 +936,7 @@
 		},
 		{
 			// 👍🏿
-			"name": "[concat(variables('linuxVMName'), '2', '/injectRunCommand')]",
+			"name": "[concat(variables('linuxVMName'), '2', '/injectCSE')]",
 			"type": "Microsoft.Compute/virtualMachines/extensions",
 			"location": "[resourceGroup().location]",
 			"apiVersion": "2019-03-01",
@@ -958,7 +958,7 @@
 		},
 		{
 			// 👍🏿
-			"name": "[concat(variables('linuxVMName'), '3', '/injectRunCommand')]",
+			"name": "[concat(variables('linuxVMName'), '3', '/injectCSE')]",
 			"type": "Microsoft.Compute/virtualMachines/extensions",
 			"location": "[resourceGroup().location]",
 			"apiVersion": "2019-03-01",
@@ -980,7 +980,7 @@
 		},
 		{
 			// 👍🏿
-			"name": "[concat(variables('linuxVMName'), '4', '/injectRunCommand')]",
+			"name": "[concat(variables('linuxVMName'), '4', '/injectCSE')]",
 			"type": "Microsoft.Compute/virtualMachines/extensions",
 			"location": "[resourceGroup().location]",
 			"apiVersion": "2019-03-01",
@@ -1002,7 +1002,7 @@
 		},
 		{
 			// 👍🏿
-			"name": "[concat(variables('linuxVMName'), '5', '/injectRunCommand')]",
+			"name": "[concat(variables('linuxVMName'), '5', '/injectCSE')]",
 			"type": "Microsoft.Compute/virtualMachines/extensions",
 			"location": "[resourceGroup().location]",
 			"apiVersion": "2019-03-01",
@@ -1024,7 +1024,7 @@
 		},
 		{
 			// 👍🏿
-			"name": "[concat(variables('linuxVMName'), '6', '/injectRunCommand')]",
+			"name": "[concat(variables('linuxVMName'), '6', '/injectCSE')]",
 			"type": "Microsoft.Compute/virtualMachines/extensions",
 			"location": "[resourceGroup().location]",
 			"apiVersion": "2019-03-01",
@@ -1046,7 +1046,7 @@
 		},
 		{
 			// 👍🏿
-			"name": "[concat(variables('linuxVMName'), '7', '/injectRunCommand')]",
+			"name": "[concat(variables('linuxVMName'), '7', '/injectCSE')]",
 			"type": "Microsoft.Compute/virtualMachines/extensions",
 			"location": "[resourceGroup().location]",
 			"apiVersion": "2019-03-01",

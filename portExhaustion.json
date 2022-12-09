@@ -104,6 +104,17 @@
 			"storageAccountNamePrefix": "[variables('storageAccountName')]",
 			"sasToken": "[parameters('_artifactsLocationSasToken')]",
 			"domainName": "[parameters('domainName')]"
+		},
+		"SharedVmConfig2": {
+			"location": "[resourceGroup().location]",
+			"vmSize": "[parameters('vmSize')]",
+			"serverOS": "2016-Datacenter",
+			"domainUsername": "[variables('domainUsername')]",
+			"adminUsername": "[parameters('adminUsername')]",
+			"adminPassword": "[parameters('adminPassword')]",
+			"storageAccountNamePrefix": "[variables('storageAccountName')]",
+			"sasToken": "[parameters('_artifactsLocationSasToken')]",
+			"domainName": "[parameters('domainName')]"
 		}
 	},
 	"resources": [
@@ -313,7 +324,7 @@
 				},
 				"parameters": {
 					"SharedVmConfig": {
-						"value": "[variables('SharedVmConfig')]"
+						"value": "[variables('SharedVmConfig2')]"
 					},
 					"vmName": {
 						"value": "[variables('VMs').appVmName]"
