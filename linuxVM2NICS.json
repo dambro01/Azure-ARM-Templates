@@ -55,9 +55,10 @@
 	},
 	"variables": {
 		"nicName": "myVMNic",
-		"addressPrefix": "10.0.0.0/16",
+		"addressPrefix": "10.2.0.0/24",
 		"subnetName": "Subnet",
-		"subnetPrefix": "10.0.0.0/24",
+		"subnetPrefix": "10.0.0.0/28",
+		"subnetPrefix2": "10.0.0.16/28",
 		"subnetRef": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworkName'), variables('subnetName'))]",
 		"vmName": "rhelVM",
 		"virtualNetworkName": "MyVNET",
@@ -129,6 +130,15 @@
 								"id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSecurityGroupName'))]"
 							}
 						}
+					},
+					{
+						"name": "[concat(variables('subnetName'),'2')]",
+						"properties": {
+							"addressPrefix": "[variables('subnetPrefix2')]",
+							"networkSecurityGroup": {
+								"id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSecurityGroupName'))]"
+							}
+						}
 					}
 				]
 			}
@@ -178,7 +188,7 @@
 								"id": "[resourceId('Microsoft.Network/publicIPAddresses',concat(variables('publicIPAddressName'),'2'))]"
 							},
 							"subnet": {
-								"id": "[variables('subnetRef')]"
+								"id": "[concat(variables('subnetRef'),'2')]"
 							}
 						}
 					}
