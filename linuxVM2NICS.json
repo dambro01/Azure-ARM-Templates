@@ -60,7 +60,7 @@
 		"subnetPrefix": "10.0.0.0/28",
 		"subnetPrefix2": "10.0.0.16/28",
 		"subnetRef": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworkName'), variables('subnetName'))]",
-		"vmName": "rhelVM",
+		"vmName": "rhel2NicsVM",
 		"virtualNetworkName": "MyVNET",
 		"publicIPAddressName": "myPublicIP",
 		"networkSecurityGroupName": "default-NSG"
