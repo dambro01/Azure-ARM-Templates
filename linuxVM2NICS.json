@@ -65,6 +65,7 @@
 		"vmName": "rhel2NicsVM",
 		"virtualNetworkName": "MyVNET",
 		"publicIPAddressName": "myPublicIP",
+		"publicIPAddressName2": "myPublicIP2",
 		"networkSecurityGroupName": "default-NSG"
 	},
 	"resources": [
@@ -74,16 +75,18 @@
 			"name": "[variables('publicIPAddressName')]",
 			"location": "[parameters('location')]",
 			"properties": {
-				"publicIPAllocationMethod": "Dynamic"
+				"publicIPAllocationMethod": "Dynamic",
+				"publicIPAddressVersion": "IPv4"
 			}
 		},
 		{
 			"type": "Microsoft.Network/publicIPAddresses",
 			"apiVersion": "2020-08-01",
-			"name": "[concat(variables('publicIPAddressName'),'2')]",
+			"name": "[variables('publicIPAddressName2')]",
 			"location": "[parameters('location')]",
 			"properties": {
-				"publicIPAllocationMethod": "Dynamic"
+				"publicIPAllocationMethod": "Dynamic",
+				"publicIPAddressVersion": "IPv4"
 			}
 		},
 		{
@@ -177,7 +180,7 @@
 			"name": "[concat(variables('nicName'),'2')]",
 			"location": "[parameters('location')]",
 			"dependsOn": [
-				"[concat(variables('publicIPAddressName'),'2')]",
+				"[variables('publicIPAddressName2')]",
 				"[variables('virtualNetworkName')]"
 			],
 			"properties": {
@@ -214,7 +217,8 @@
 			"name": "[variables('vmName')]",
 			"location": "[parameters('location')]",
 			"dependsOn": [
-				"[variables('nicName')]"
+				"[resourceId('Microsoft.Network/networkInterfaces', variables('nicName'))]",
+				"[resourceId('Microsoft.Network/networkInterfaces', concat(variables('nicName'),'2'))]"
 			],
 			"properties": {
 				"hardwareProfile": {
@@ -242,7 +246,16 @@
 				"networkProfile": {
 					"networkInterfaces": [
 						{
-							"id": "[resourceId('Microsoft.Network/networkInterfaces',variables('nicName'))]"
+							"id": "[resourceId('Microsoft.Network/networkInterfaces',variables('nicName'))]",
+							"properties": {
+								"primary": true
+								}
+						},
+						{
+							"id": "[resourceId('Microsoft.Network/networkInterfaces',concat(variables('nicName'),'2'))]",
+							"properties": {
+								"primary": false
+							}
 						}
 					]
 				},
