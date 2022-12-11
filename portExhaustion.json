@@ -38,6 +38,18 @@
 				"description": "The administrator account password."
 			}
 		},
+		"domainAccountUsername": {
+			"type": "string",
+			"metadata": {
+				"description": "The name of a domain user to create, i.e. globaluser. Log in with this username after ~20 minutes to experience the port exhaustion issue."
+			}
+		},
+		"domainAccountPassword": {
+			"type": "securestring",
+			"metadata": {
+				"description": "The domain user account password."
+			}
+		},
 		"vmSize": {
 			"type": "string",
 			"metadata": {
@@ -359,6 +371,27 @@
 		{
 			"type": "Microsoft.Compute/virtualMachines/runCommands",
 			"apiVersion": "2021-11-01",
+			"name": "[concat('DC1','/addDomainUserWithRunCommand')]",
+			"location": "[resourceGroup().location]",
+			"dependsOn": [
+				"[resourceId('Microsoft.Resources/deployments', 'ADDC')]"
+			],
+			"properties": {
+				"protectedParameters": [
+					{
+						"name": "pass",
+						"value": "[parameters('domainAccountPassword')]"
+					}
+				],
+				"source": {
+					"script": "[concat('param([string]$pass); New-ADUser -Name \"', parameters('domainAccountUsername'), '\" -Accountpassword (ConvertTo-SecureString -AsPlainText -Force $pass) -Enabled $true;', 'get-aduser -Filter \"Name -like \"\"', parameters('domainAccountUsername'), '\"\"\" | Enable-ADAccount; cmd /c ''(net localgroup \"remote desktop users\" \"', parameters('domainAccountUsername'), '\" /add)''; cmd /c ''(net localgroup \"administrators\" \"', parameters('domainAccountUsername'), '\" /add)''')]"
+				},
+				"timeoutInSeconds": 60
+			}
+		},
+		{
+			"type": "Microsoft.Compute/virtualMachines/runCommands",
+			"apiVersion": "2021-11-01",
 			"name": "[concat('APP1','/portExhaust')]",
 			"location": "[resourceGroup().location]",
 			"dependsOn": [
@@ -381,21 +414,17 @@
 			"type": "string",
 			"value": "[concat(parameters('domainName'),'\\User1')]"
 		},
+		"createdDomainAccount": {
+			"type": "string",
+			"value": "[concat(parameters('domainName'),'\\User1')]"
+		},
 		"DcPublicIpAddress": {
 			"type": "string",
 			"value": "[reference(variables('VMs').adPublicIpName).ipAddress]"
 		},
-		"DcFqdn": {
-			"type": "string",
-			"value": "[reference(variables('VMs').adPublicIpName).dnsSettings.fqdn]"
-		},
 		"AppPublicIpAddress": {
 			"type": "string",
 			"value": "[reference(variables('VMs').appPublicIpName).ipAddress]"
-		},
-		"AppFqdn": {
-			"type": "string",
-			"value": "[reference(variables('VMs').appPublicIpName).dnsSettings.fqdn]"
 		}
 	}
 }
