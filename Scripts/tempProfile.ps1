@@ -1,5 +1,7 @@
 # Corrupts the user profie
 
+Start-Sleep -Seconds 120
+
 md c:\temp
 
 cd C:\temp\
