@@ -245,7 +245,7 @@
 				"typeHandlerVersion": "1.9",
 				"autoUpgradeMinorVersion": true,
 				"protectedSettings": {
-					"commandToExecute": "powershell -File tempProfile.ps1",
+					"commandToExecute": "[concat('powershell Start-Process tempProfile.bat')]",
 					"fileUris": [
 						"https://raw.githubusercontent.com/rjmccallumbigl/Azure-ARM-Templates/main/Scripts/tempProfile.ps1"
 					]
