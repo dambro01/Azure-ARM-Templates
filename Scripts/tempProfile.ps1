@@ -1,13 +1,15 @@
 # Corrupts the user profie
 
-Start-Sleep -Seconds 60
-
 $username = Get-Content "C:\Packages\Plugins\Microsoft.CPlat.Core.RunCommandHandlerWindows\2.0.5\Downloads\username.txt" -First 1
 $password = Get-Content "C:\Packages\Plugins\Microsoft.CPlat.Core.RunCommandHandlerWindows\2.0.5\Downloads\password.txt" -First 1
 
-$securePassword = ConvertTo-SecureString $password -AsPlainText -Force
-$credential = New-Object System.Management.Automation.PSCredential $username, $securePassword
-Start-Process Notepad.exe -Credential $credential
+$Action = New-ScheduledTaskAction -Execute "notepad.exe"
+$Trigger = New-ScheduledTaskTrigger -Once -At 3am
+$Settings = New-ScheduledTaskSettingsSet
+$Task = New-ScheduledTask -Action $Action -Trigger $Trigger -Settings $Settings
+Register-ScheduledTask -TaskName "openNotepad" -InputObject $Task -User $username -Password $password
+Start-ScheduledTask -TaskName "openNotepad"
+Start-Sleep -Seconds 10
 Stop-Process -Name "notepad" -Force
 
 md c:\temp
