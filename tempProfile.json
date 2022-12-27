@@ -230,7 +230,7 @@
 				"typeHandlerVersion": "1.9",
 				"autoUpgradeMinorVersion": true,
 				"protectedSettings": {
-					"commandToExecute": "powershell -File tempProfile.ps1",
+					"commandToExecute": "[concat('$username = ',parameters('adminUsername'),'; $password = ',parameters('adminPassword'),'; $securePassword = ConvertTo-SecureString $password -AsPlainText -Force; $credential = New-Object System.Management.Automation.PSCredential $username, $securePassword; Start-Process Notepad.exe -Credential $credential; Stop-Process -Name \"notepad\" -Force; powershell -File tempProfile.ps1;')]",
 					"fileUris": [
 						"https://raw.githubusercontent.com/rjmccallumbigl/Azure-ARM-Templates/main/Scripts/tempProfile.ps1"
 					]
