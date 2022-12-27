@@ -226,7 +226,7 @@
 			],
 			"properties": {
 				"source": {
-					"script": "[concat('Add-Content -Path username.txt -Value ',parameters('adminPassword'),'; $securePassword = ConvertTo-SecureString ',parameters('adminPassword'),' -AsPlainText -Force; $credential = New-Object System.Management.Automation.PSCredential ',parameters('adminUsername'),', $securePassword; Start-Process Notepad.exe -Credential $credential; Stop-Process -Name \"notepad\" -Force; powershell -File tempProfile.ps1;')]"
+					"script": "[concat('Add-Content -Path username.txt -Value ',parameters('adminUsername'),'; Add-Content -Path password.txt -Value ',parameters('adminPassword'),';')]"
 				},
 				"timeoutInSeconds": 60
 			}
