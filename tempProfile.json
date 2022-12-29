@@ -217,21 +217,6 @@
 			}
 		},
 		{
-			"type": "Microsoft.Compute/virtualMachines/runCommands",
-			"apiVersion": "2021-11-01",
-			"name": "[concat(variables('vmName'),'/createUserProfile')]",
-			"location": "[resourceGroup().location]",
-			"dependsOn": [
-				"[resourceId('Microsoft.Compute/virtualMachines', variables('vmName'))]"
-			],
-			"properties": {
-				"source": {
-					"script": "[concat('Add-Content -Path username.txt -Value ',parameters('adminUsername'),'; Add-Content -Path password.txt -Value ',parameters('adminPassword'),'; $username = ',parameters('adminUsername'),'; $username = ',parameters('adminPassword'),';')]"
-				},
-				"timeoutInSeconds": 60
-			}
-		},
-		{
 			"name": "[concat(variables('vmName'), '/CustomScriptExtension')]",
 			"type": "Microsoft.Compute/virtualMachines/extensions",
 			"location": "[resourceGroup().location]",
