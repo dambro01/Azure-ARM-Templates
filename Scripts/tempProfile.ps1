@@ -1,7 +1,10 @@
 # Corrupts the user profie
 
-$username = Get-Content "C:\Packages\Plugins\Microsoft.CPlat.Core.RunCommandHandlerWindows\2.0.5\Downloads\username.txt" -First 1
-$password = Get-Content "C:\Packages\Plugins\Microsoft.CPlat.Core.RunCommandHandlerWindows\2.0.5\Downloads\password.txt" -First 1
+#$username = Get-Content "C:\Packages\Plugins\Microsoft.CPlat.Core.RunCommandHandlerWindows\2.0.5\Downloads\username.txt" -First 1
+#$password = Get-Content "C:\Packages\Plugins\Microsoft.CPlat.Core.RunCommandHandlerWindows\2.0.5\Downloads\password.txt" -First 1
+
+$username = "azuresota"
+$password = "P@ssword!123"
 
 $Action = New-ScheduledTaskAction -Execute "notepad.exe"
 $Trigger = New-ScheduledTaskTrigger -Once -At 3am
