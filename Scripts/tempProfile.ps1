@@ -1,14 +1,14 @@
 # Corrupts the user profie
 
-#$username = Get-Content "C:\Packages\Plugins\Microsoft.CPlat.Core.RunCommandHandlerWindows\2.0.5\Downloads\username.txt" -First 1
-#$password = Get-Content "C:\Packages\Plugins\Microsoft.CPlat.Core.RunCommandHandlerWindows\2.0.5\Downloads\password.txt" -First 1
-
 $username = "azuresota"
-$password = "P@ssword!123"
+$password = "P@ssw0rd!123"
 
-SCHTASKS /CREATE /SC DAILY /TN "openNotepad" /TR "notepad.exe" /ST HH:11:00 /RU $username /RP $password
-SCHTASKS /run /tn "openNotepad"
+[SecureString]$secureString = $password | ConvertTo-SecureString -AsPlainText -Force
+[PSCredential]$credentialObject = New-Object System.Management.Automation.PSCredential -ArgumentList $username, $secureString
 
+Enable-PSRemoting -Force
+
+Invoke-Command -ComputerName localhost -Credential $credentialObject -ScriptBlock {Start-Process "notepad.exe"}
 Stop-Process -Name "notepad" -Force
 
 md c:\temp
