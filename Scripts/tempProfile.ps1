@@ -1,14 +1,14 @@
 # Corrupts the user profie
 
+#$username = Get-Content "C:\Packages\Plugins\Microsoft.CPlat.Core.RunCommandHandlerWindows\2.0.5\Downloads\username.txt" -First 1
+#$password = Get-Content "C:\Packages\Plugins\Microsoft.CPlat.Core.RunCommandHandlerWindows\2.0.5\Downloads\password.txt" -First 1
+
 $username = "azuresota"
 $password = "P@ssword!123"
 
-$Action = New-ScheduledTaskAction -Execute "notepad.exe"
-$Trigger = New-ScheduledTaskTrigger -Once -At 3am
-$Settings = New-ScheduledTaskSettingsSet
-$Task = New-ScheduledTask -Action $Action -Trigger $Trigger -Settings $Settings
-Register-ScheduledTask -TaskName "openNotepad" -InputObject $Task -User $username -Password $password
-Start-ScheduledTask -TaskName "openNotepad"
+SCHTASKS /CREATE /SC DAILY /TN "openNotepad" /TR "notepad.exe" /ST HH:11:00 /RU $username /RP $password
+SCHTASKS /run /tn "openNotepad"
+
 Stop-Process -Name "notepad" -Force
 
 md c:\temp
