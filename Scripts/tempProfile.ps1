@@ -3,17 +3,26 @@
 #$username = Get-Content "C:\Packages\Plugins\Microsoft.CPlat.Core.RunCommandHandlerWindows\2.0.5\Downloads\username.txt" -First 1
 #$password = Get-Content "C:\Packages\Plugins\Microsoft.CPlat.Core.RunCommandHandlerWindows\2.0.5\Downloads\password.txt" -First 1
 
-$username = "azuresota"
+$username = "$env:USERDOMAIN\azuresota"
+$profile = "azuresota"
 $password = "P@ssword!123"
 
+[securestring]$securePassword = $password | convertto-securestring -AsPlainText -Force
+$cred = new-object -typename System.Management.Automation.PSCredential -argumentlist $username, $securePassword
 $time = [DateTime]::Now.AddSeconds(15)
-$Action = New-ScheduledTaskAction -Execute "notepad.exe"
 $Trigger = New-ScheduledTaskTrigger -Once -At $time
-$Settings = New-ScheduledTaskSettingsSet
-$Task = New-ScheduledTask -Action $Action -Trigger $Trigger -Settings $Settings
-Register-ScheduledTask -TaskName "openNotepad" -InputObject $Task -User $username -Password $password
-Start-Sleep -Seconds 20
-Stop-Process -Name "notepad" -Force
+$Action = New-ScheduledTaskAction -Execute "notepad.exe"
+
+# Using Invoke-Command to Execute the Register-ScheduledTask cmdlet under the local admin account because System doesn't have the correct permissions
+
+Invoke-Command -Credential $cred -ComputerName $env:ComputerName -ScriptBlock {
+
+param($username, $password, $Trigger, $Action)
+
+Register-ScheduledTask -user $username -password $password -TaskName "openNotepad" -Trigger $Trigger -Action $Action -Force
+
+} -Args $username, $password, $Trigger, $Action
+
 
 md c:\temp
 
@@ -21,13 +30,13 @@ cd C:\temp\
 $registry = Get-ChildItem "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList\" -Recurse
 Foreach($a in $registry) {
     $a.Property | ForEach-Object {
-        If($a.GetValue($_) -eq ("C:\Users\" + $username))
+        If($a.GetValue($_) -eq ("C:\Users\" + $profile))
         {
             $path = $a.PSChildName
             Invoke-Command { reg export ("HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList\" + $path) regbck.reg }
             Rename-Item -Path ("HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList\" + $path) -NewName ($path + ".bak")
             Invoke-Command { reg import regbck.reg }
-            Set-ItemProperty -Path ("HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList\" + $path) -name "ProfileImagePath" -value ("C:\Users\" + $username + "1")
+            Set-ItemProperty -Path ("HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList\" + $path) -name "ProfileImagePath" -value ("C:\Users\" + $profile + "1")
             }
     }
 }
