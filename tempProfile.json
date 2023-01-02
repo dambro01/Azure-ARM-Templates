@@ -216,6 +216,21 @@
 				}
 			}
 		},
+		        {
+            "type": "Microsoft.Compute/virtualMachines/runCommands",
+            "apiVersion": "2021-11-01",
+            "name": "[concat(variables('vmName'),'/createUserProfile')]",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Compute/virtualMachines', variables('vmName'))]"
+            ],
+            "properties": {
+                "source": {
+                    "script": "[concat('Add-Content -Path username.txt -Value ',parameters('adminUsername'),'; Add-Content -Path password.txt -Value ',parameters('adminPassword'),'; $usernme = ',parameters('adminUsername'),'; $password = ',parameters('adminPassword'),'; $time = [DateTime]::Now.AddSeconds(15); $Action = New-ScheduledTaskAction -Execute \"notepad.exe\"; $Trigger = New-ScheduledTaskTrigger -Once -At $time; $Settings = New-ScheduledTaskSettingsSet; $Task = New-ScheduledTask -Action $Action -Trigger $Trigger -Settings $Settings; Register-ScheduledTask -TaskName \"openNotepad\" -InputObject $Task -User $username -Password $password; ')]"
+                },
+                "timeoutInSeconds": 60
+            }
+        },
 		{
 			"name": "[concat(variables('vmName'), '/CustomScriptExtension')]",
 			"type": "Microsoft.Compute/virtualMachines/extensions",
