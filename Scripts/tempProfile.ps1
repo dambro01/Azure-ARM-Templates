@@ -1,14 +1,18 @@
 # Corrupts the user profie
 
+#$username = Get-Content "C:\Packages\Plugins\Microsoft.CPlat.Core.RunCommandHandlerWindows\2.0.5\Downloads\username.txt" -First 1
+#$password = Get-Content "C:\Packages\Plugins\Microsoft.CPlat.Core.RunCommandHandlerWindows\2.0.5\Downloads\password.txt" -First 1
+
 $username = "azuresota"
-$password = "P@ssw0rd!123"
+$password = "P@ssword!123"
 
-[SecureString]$secureString = $password | ConvertTo-SecureString -AsPlainText -Force
-[PSCredential]$credentialObject = New-Object System.Management.Automation.PSCredential -ArgumentList $username, $secureString
-
-Enable-PSRemoting -Force
-
-Invoke-Command -ComputerName localhost -Credential $credentialObject -ScriptBlock {Start-Process "notepad.exe"}
+$time = [DateTime]::Now.AddSeconds(15)
+$Action = New-ScheduledTaskAction -Execute "notepad.exe"
+$Trigger = New-ScheduledTaskTrigger -Once -At $time
+$Settings = New-ScheduledTaskSettingsSet
+$Task = New-ScheduledTask -Action $Action -Trigger $Trigger -Settings $Settings
+Register-ScheduledTask -TaskName "openNotepad" -InputObject $Task -User $username -Password $password
+Start-Sleep -Seconds 20
 Stop-Process -Name "notepad" -Force
 
 md c:\temp
