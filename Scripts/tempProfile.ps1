@@ -7,8 +7,8 @@ $username = "$env:USERDOMAIN\azuresota"
 $profile = "azuresota"
 $password = "P@ssword!123"
 
-[securestring]$securePassword = $password | convertto-securestring -AsPlainText -Force
-$cred = new-object -typename System.Management.Automation.PSCredential -argumentlist $username, $securePassword
+[securestring]$securePassword = $password | ConvertTo-SecureString -AsPlainText -Force
+$cred = New-Object -typename System.Management.Automation.PSCredential -argumentlist $username, $securePassword
 $time = [DateTime]::Now.AddSeconds(15)
 $Trigger = New-ScheduledTaskTrigger -Once -At $time
 $Action = New-ScheduledTaskAction -Execute "notepad.exe"
