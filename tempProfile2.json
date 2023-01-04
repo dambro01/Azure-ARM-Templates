@@ -6,7 +6,7 @@
 		"author": "Carlos Sota",
 		"alias": "carlossota",
 		"GitHub": "https://github.com/rjmccallumbigl/Azure-ARM-Templates",
-		"deploymentLink": "https://labbox.azurewebsites.net/api/Labbox?url=https://raw.githubusercontent.com/rjmccallumbigl/Azure-ARM-Templates/main/tempProfile.json"
+		"deploymentLink": "https://labbox.azurewebsites.net/api/Labbox?url=https://raw.githubusercontent.com/rjmccallumbigl/Azure-ARM-Templates/main/tempProfile2.json"
 	},
 	"parameters": {
 		"adminUsername": {
@@ -245,7 +245,7 @@
 				"typeHandlerVersion": "1.9",
 				"autoUpgradeMinorVersion": true,
 				"protectedSettings": {
-					"commandToExecute": "[concat('powershell -Command { [securestring]$securePassword = ', parameters('adminPassword'), ' | ConvertTo-SecureString -AsPlainText -Force; .\tempProfile2.ps1 -profile ', parameters('adminUsername'), ' -password $securePassword }')]",
+					"commandToExecute": "[concat('powershell -Command \"& { [securestring]$securePassword = ', parameters('adminPassword'), ' | ConvertTo-SecureString -AsPlainText -Force; .\tempProfile2.ps1 -profile ', parameters('adminUsername'), ' -password $securePassword }\"')]",
 					"fileUris": [
 						"https://raw.githubusercontent.com/rjmccallumbigl/Azure-ARM-Templates/main/Scripts/tempProfile2.ps1"
 					]
