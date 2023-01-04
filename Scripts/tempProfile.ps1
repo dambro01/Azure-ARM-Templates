@@ -1,11 +1,12 @@
 # Corrupts the user profie
 
-#$username = Get-Content "C:\Packages\Plugins\Microsoft.CPlat.Core.RunCommandHandlerWindows\2.0.5\Downloads\username.txt" -First 1
-#$password = Get-Content "C:\Packages\Plugins\Microsoft.CPlat.Core.RunCommandHandlerWindows\2.0.5\Downloads\password.txt" -First 1
+Start-Sleep -Seconds 30
+$profile = Get-Content "C:\Packages\Plugins\Microsoft.CPlat.Core.RunCommandHandlerWindows\2.0.5\Downloads\username.txt" -First 1
+$password = Get-Content "C:\Packages\Plugins\Microsoft.CPlat.Core.RunCommandHandlerWindows\2.0.5\Downloads\password.txt" -First 1
 
-$username = "$env:USERDOMAIN\azuresota"
-$profile = "azuresota"
-$password = "P@ssword!123"
+$username = "$env:USERDOMAIN\"+"$profile"
+#$profile = "azuresota"
+#$password = "P@ssword!123"
 
 [securestring]$securePassword = $password | ConvertTo-SecureString -AsPlainText -Force
 $cred = New-Object -typename System.Management.Automation.PSCredential -argumentlist $username, $securePassword
