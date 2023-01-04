@@ -245,7 +245,7 @@
 				"typeHandlerVersion": "1.9",
 				"autoUpgradeMinorVersion": true,
 				"protectedSettings": {
-					"commandToExecute": "[concat('powershell -Command \"& { [securestring]$securePassword = ', parameters('adminPassword'), ' | ConvertTo-SecureString -AsPlainText -Force; .\\tempProfile2.ps1 -profile ', parameters('adminUsername'), ' -password $securePassword }\"')]",
+					"commandToExecute": "[concat('powershell -Command \"& { [securestring]$securePassword = ''', parameters('adminPassword'), ''' | ConvertTo-SecureString -AsPlainText -Force; .\\tempProfile2.ps1 -profile ', parameters('adminUsername'), ' -password $securePassword }\"')]",
 					"fileUris": [
 						"https://raw.githubusercontent.com/rjmccallumbigl/Azure-ARM-Templates/main/Scripts/tempProfile2.ps1"
 					]
