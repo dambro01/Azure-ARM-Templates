@@ -5,8 +5,6 @@ $profile = Get-Content "C:\Packages\Plugins\Microsoft.CPlat.Core.RunCommandHandl
 $password = Get-Content "C:\Packages\Plugins\Microsoft.CPlat.Core.RunCommandHandlerWindows\2.0.5\Downloads\password.txt" -First 1
 
 $username = "$env:USERDOMAIN\"+"$profile"
-#$profile = "azuresota"
-#$password = "P@ssword!123"
 
 [securestring]$securePassword = $password | ConvertTo-SecureString -AsPlainText -Force
 $cred = New-Object -typename System.Management.Automation.PSCredential -argumentlist $username, $securePassword
