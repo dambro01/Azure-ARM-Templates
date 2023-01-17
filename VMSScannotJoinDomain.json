@@ -161,7 +161,6 @@
 				},
 				"dhcpOptions": {
 					"dnsServers": [
-						"[variables('VMs').adNicIP]",
 						"168.63.129.16"
 					]
 				},
@@ -365,7 +364,7 @@
 					"Options": "3"
 				},
 				"protectedsettings": {
-					"Password": "password"
+					"Password": "[parameters('domainAccountPassword')]"
 				}
 			}
 		}
