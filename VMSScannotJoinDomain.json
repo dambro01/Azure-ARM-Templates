@@ -7,6 +7,7 @@
 		"alias": "RYMCCALL",
 		"GitHub": "https://github.com/rjmccallumbigl/Azure-ARM-Templates",
 		"Enablement": "https://docs.microsoft.com/en-us/azure/virtual-machine-scale-sets/virtual-machine-scale-sets-faq#how-do-i-join-a-virtual-machine-scale-set-to-an-active-directory-domain-",
+		"Enablement #2": "https://learn.microsoft.com/en-us/azure/active-directory-domain-services/join-windows-vm",
 		"deploymentLink": "https://labbox.azurewebsites.net/api/Labbox?url=https://raw.githubusercontent.com/rjmccallumbigl/Azure-ARM-Templates/main/VMSScannotJoinDomain.json"
 	},
 	"parameters": {
