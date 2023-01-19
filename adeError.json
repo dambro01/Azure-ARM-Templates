@@ -60,12 +60,12 @@
 			"defaultValue": "[concat('key-', uniqueString(resourceGroup().id))]",
 			"type": "String"
 		},
-		"objectId": {
-			"type": "String",
-			"metadata": {
-				"description": "Specifies your object ID. Get it by using Get-AzADUser -SignedIn cmdlet."
-			}
-		},
+		// "objectId": {
+		// 	"type": "String",
+		// 	"metadata": {
+		// 		"description": "Specifies your object ID. Get it by using Get-AzADUser -SignedIn cmdlet."
+		// 	}
+		// },
 		"utcValue": {
 			"defaultValue": "[utcNow()]",
 			"type": "string",
@@ -128,7 +128,9 @@
 				"tenantId": "[subscription().tenantId]",
 				"accessPolicies": [
 					{
-						"objectId": "[parameters('objectId')]",
+						// "objectId": "[parameters('objectId')]",
+						// "objectId": "[reference(concat('Microsoft.Compute/virtualMachines/', variables('vmName')), '2017-03-30', 'Full').identity.principalId]",
+						"objectId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities',variables('userIdentity')), '2018-11-30', 'full').properties.clientId]",
 						"tenantId": "[subscription().tenantId]",
 						"permissions": {
 							"keys": [
