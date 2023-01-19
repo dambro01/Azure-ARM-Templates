@@ -1,0 +1,87 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"metadata": {
+		"description": "Showing how to use az powershell/cli within your script.",
+		"author": "Ryan McCallum",
+		"alias": "RYMCCALL",
+		"GitHub": "https://github.com/rjmccallumbigl/Azure-ARM-Templates",
+		"Enablement": "https://learn.microsoft.com/en-us/cli/azure/choose-the-right-azure-command-line-tool",
+		"deploymentLink": "https://labbox.azurewebsites.net/api/Labbox?url=https://raw.githubusercontent.com/rjmccallumbigl/Azure-ARM-Templates/main/exampleAZScript.json"
+	},
+	"parameters": {
+		"location": {
+			"defaultValue": "[resourceGroup().location]",
+			"type": "String",
+			"metadata": {
+				"description": "Location for all resources."
+			}
+		},
+		"utcValue": {
+			"defaultValue": "[utcNow()]",
+			"type": "string",
+			"metadata": {
+				"description": "UTC"
+			}
+		}
+	},
+	"variables": {
+		"userIdentity": "[tolower(concat('ui-', uniquestring(resourceGroup().id)))]",
+		"bootstrapRoleAssignmentId": "[guid(concat(resourceGroup().id, 'contributor'))]",
+		"contributorRoleDefinitionId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', 'b24988ac-6180-42a0-ab88-20f7382dd24c')]"
+	},
+	"resources": [
+		{
+			"type": "Microsoft.ManagedIdentity/userAssignedIdentities",
+			"name": "[variables('userIdentity')]",
+			"apiVersion": "2018-11-30",
+			"location": "[parameters('location')]"
+		},
+		{
+			"type": "Microsoft.Authorization/roleAssignments",
+			"apiVersion": "2018-09-01-preview",
+			"name": "[variables('bootstrapRoleAssignmentId')]",
+			"dependsOn": [
+				"[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('userIdentity'))]"
+			],
+			"properties": {
+				"roleDefinitionId": "[variables('contributorRoleDefinitionId')]",
+				"principalId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('userIdentity')), '2018-11-30').principalId]",
+				"principalType": "ServicePrincipal"
+			}
+		},
+		{
+			"type": "Microsoft.Resources/deploymentScripts",
+			"apiVersion": "2020-10-01",
+			"name": "GetObjectID",
+			"location": "[resourceGroup().location]",
+			"dependsOn": [
+				"[resourceId('Microsoft.Authorization/roleAssignments', variables('bootstrapRoleAssignmentId'))]"
+			],
+			"identity": {
+				"type": "UserAssigned",
+				"userAssignedIdentities": {
+					"[format('{0}', resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('userIdentity')))]": {}
+				}
+			},
+			"kind": "AzurePowerShell",
+			"properties": {
+				"forceUpdateTag": "[parameters('utcValue')]",
+				"azPowerShellVersion": "9.0",
+				"timeout": "PT30M",
+				// "arguments": "[format(' -rgName {0} -subID {1}', resourceGroup().name, subscription().subscriptionId)]",
+				// "scriptContent": "param( [string] [Parameter(Mandatory=$true)] $rgName, [string] [Parameter(Mandatory=$true)] $subID); $ErrorActionPreference = 'Stop'; Set-AzContext -Subscription $subID; Set-AzDefault -ResourceGroupName $rgName; $vm = Get-AzVM -ResourceGroupName $rgName -Name 'App1'; Stop-AzVM -ResourceGroupName $rgName -Name $vm.Name -Force; $disk = Get-AzDisk -ResourceGroupName $rgName -DiskName 'snapshotDisk'; Set-AzVMOSDisk -VM $vm -ManagedDiskId $disk.Id -Name $disk.Name; Update-AzVM -ResourceGroupName $rgName -VM $vm; Start-AzVM -Name $vm.Name -ResourceGroupName $rgName;",
+				"scriptContent": "$objID = Get-AzADUser -UserPrincipalName 'RYMCCALL@microsoft.com'; $DeploymentScriptOutputs = @{}; $DeploymentScriptOutputs['text'] = $objID.ID;",
+				// Insufficient privileges to complete the operation.
+				"cleanupPreference": "OnSuccess",
+				"retentionInterval": "P1D"
+			}
+		}
+	],
+	"outputs": {
+		"objectID": {
+			"type": "string",
+			"value": "[reference('GetObjectID').outputs.text]"
+		}
+	}
+}
