@@ -219,9 +219,6 @@
 		}
 	],
 	"outputs": {
-		"vm-fqdn": {
-			"type": "String",
-			"value": "[reference(variables('publicIPAddressName'), '2020-07-01').dnsSettings.fqdn]"
-		}
+
 	}
 }

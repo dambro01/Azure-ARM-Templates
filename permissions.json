@@ -249,10 +249,6 @@
 		}
 	],
 	"outputs": {
-		"vm-fqdn": {
-			"type": "String",
-			"value": "[reference(variables('publicIPAddressName'), '2020-07-01').dnsSettings.fqdn]"
-		},
 		"sshCommand": {
 			"type": "string",
 			"value": "[format('ssh {0}@{1}', parameters('adminUsername'), reference(resourceId('Microsoft.Network/publicIPAddresses', variables('publicIPAddressName'))).dnsSettings.fqdn)]"

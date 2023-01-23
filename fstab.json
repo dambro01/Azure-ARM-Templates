@@ -217,7 +217,6 @@
 				}
 			}
 		},
-
 		{
 			"name": "[concat(variables('vmName'), '/runLinuxScriptinCSE')]",
 			"type": "Microsoft.Compute/virtualMachines/extensions",
@@ -240,10 +239,5 @@
 			}
 		}
 	],
-	"outputs": {
-		"vm-fqdn": {
-			"type": "String",
-			"value": "[reference(variables('publicIPAddressName'), '2020-07-01').dnsSettings.fqdn]"
-		}
-	}
+	"outputs": {}
 }

@@ -277,10 +277,5 @@
 			]
 		}
 	],
-	"outputs": {
-		"vm-fqdn": {
-			"type": "string",
-			"value": "[reference(variables('publicIPAddressName'), '2020-07-01').dnsSettings.fqdn]"
-		}
-	}
+	"outputs": {}
 }
