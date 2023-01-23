@@ -23,7 +23,6 @@
 				"description": "UTC"
 			}
 		}
-
 	},
 	"resources": [
 		{
@@ -55,7 +54,7 @@
 // 	"parameters": {
 // 		"vmSize": {
 // 			"type": "string",
-// 			"defaultValue": "Standard_D2s_v3",
+// 			"defaultValue": "Standard_B2ms",
 // 			"metadata": {
 // 				"description": "Size of vm"
 // 			}
@@ -239,18 +238,17 @@
 // 			}
 // 		}
 // 	],
-	// "outputs": {
-	// 	"CSEOutput": {
-	// 		"type": "object",
-	// 		"value": "[reference(resourceId('Microsoft.Compute/virtualmachines/extensions', variables('vmName'), 'installcustomscript'), '2022-11-01').instanceView]"
-	// 	},
+// "outputs": {
+// 	"CSEOutput": {
+// 		"type": "object",
+// 		"value": "[reference(resourceId('Microsoft.Compute/virtualmachines/extensions', variables('vmName'), 'installcustomscript'), '2022-11-01').instanceView]"
+// 	},
 // 		"VMOutput": {
 // 			"type": "object",
 // 			"value": "[reference(resourceId('Microsoft.Compute/virtualmachines', variables('vmName')), '2022-11-01', 'Full')]"
 // 		}
 // 	}
 // }
-
 // {
 // 	"$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
 // 	"contentVersion": "1.0.0.0",

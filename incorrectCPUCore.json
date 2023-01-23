@@ -31,7 +31,7 @@
 			}
 		},
 		"vmSize": {
-			"defaultValue": "Standard_D4s_v3",
+			"defaultValue": "Standard_B2ms",
 			"type": "String",
 			"metadata": {
 				"description": "Default VM Size"
@@ -89,18 +89,18 @@
 			"name": "[variables('networkSecurityGroupName')]",
 			"location": "[parameters('location')]",
 			"properties": {
-                "securityRules": [
-                    {
-                        "name": "default-allow-3389",
-                        "properties": {
-                            "priority": 1000,
-                            "access": "Allow",
-                            "direction": "Inbound",
-                            "destinationPortRange": "3389",
-                            "protocol": "Tcp",
-                            "sourceAddressPrefix": "*",
-                            "sourcePortRange": "*",
-                            "destinationAddressPrefix": "*"
+				"securityRules": [
+					{
+						"name": "default-allow-3389",
+						"properties": {
+							"priority": 1000,
+							"access": "Allow",
+							"direction": "Inbound",
+							"destinationPortRange": "3389",
+							"protocol": "Tcp",
+							"sourceAddressPrefix": "*",
+							"sourcePortRange": "*",
+							"destinationAddressPrefix": "*"
 						}
 					}
 				]

@@ -32,7 +32,7 @@
 			}
 		},
 		"vmSize": {
-			"defaultValue": "Standard_D2s_v3",
+			"defaultValue": "Standard_B2ms",
 			"type": "String",
 			"metadata": {
 				"description": "Default VM Size"
@@ -244,7 +244,7 @@
 							"createOption": "Empty",
 							"diskSizeGB": 30,
 							"lun": 1
-						 }
+						}
 					]
 				},
 				"networkProfile": {

@@ -43,7 +43,7 @@
 			"metadata": {
 				"description": "Select a VM size for all VMs in your deployment."
 			},
-			"defaultValue": "Standard_D2s_v3"
+			"defaultValue": "Standard_B2ms"
 		},
 		"dnsLabelPrefix": {
 			"defaultValue": "[tolower(concat('dns', uniquestring(resourceGroup().id)))]",
