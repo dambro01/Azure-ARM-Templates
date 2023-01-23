@@ -30,13 +30,7 @@
         "description": "Default VM Size"
       }
     },
-    "dnsNameForPublicIP": {
-      "defaultValue": "[tolower(concat('dns', uniquestring(resourceGroup().id)))]",
-      "type": "String",
-      "metadata": {
-        "description": "DNS name for the public IP"
-      }
-    },
+
     "storageUri": {
       "defaultValue": "[format('store{0}', uniqueString(resourceGroup().id))]",
       "type": "string",
@@ -70,10 +64,7 @@
       "name": "[variables('publicIPAddressName')]",
       "location": "[parameters('location')]",
       "properties": {
-        "publicIPAllocationMethod": "Dynamic",
-        "dnsSettings": {
-          "domainNameLabel": "[parameters('dnsNameForPublicIP')]"
-        }
+        "publicIPAllocationMethod": "Dynamic"
       }
     },
     {

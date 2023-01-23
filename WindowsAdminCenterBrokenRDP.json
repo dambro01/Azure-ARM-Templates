@@ -38,13 +38,6 @@
 				"description": "Default VM Size"
 			}
 		},
-		"dnsNameForPublicIP": {
-			"defaultValue": "[tolower(concat('dns', uniquestring(resourceGroup().id)))]",
-			"type": "string",
-			"metadata": {
-				"description": "DNS name for the public IP"
-			}
-		},
 		"extensionName": {
 			"type": "string",
 			"defaultValue": "AdminCenter"
