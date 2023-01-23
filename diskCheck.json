@@ -78,10 +78,7 @@
             "name": "[variables('publicIPAddressName')]",
             "location": "[parameters('location')]",
             "properties": {
-                "publicIPAllocationMethod": "Dynamic",
-                "dnsSettings": {
-                    "domainNameLabel": "[parameters('dnsNameForPublicIP')]"
-                }
+                "publicIPAllocationMethod": "Dynamic"
             }
         },
         {
@@ -239,10 +236,5 @@
             ]
         }
     ],
-    "outputs": {
-        "vm-fqdn": {
-            "type": "String",
-            "value": "[reference(variables('publicIPAddressName'), '2020-07-01').dnsSettings.fqdn]"
-        }
-    }
+    "outputs": {}
 }

@@ -107,10 +107,7 @@
 			"name": "[variables('publicIPAddressName')]",
 			"location": "[parameters('location')]",
 			"properties": {
-				"publicIPAllocationMethod": "Dynamic",
-				"dnsSettings": {
-					"domainNameLabel": "[parameters('dnsNameForPublicIP')]"
-				}
+				"publicIPAllocationMethod": "Dynamic"
 			}
 		},
 		{
