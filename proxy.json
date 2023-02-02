@@ -243,7 +243,8 @@
 			],
 			"properties": {
 				"source": {
-					"script": "Start-Process powershell -Verb runAs -ArgumentList { if ((Test-Path -LiteralPath 'Registry::\\HKEY_USERS\\S-1-5-18\\Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings\\Connections') -ne $true) { New-Item 'Registry::\\HKEY_USERS\\S-1-5-18\\Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings\\Connections' -Force -ea SilentlyContinue };New-ItemProperty -LiteralPath 'Registry::\\HKEY_USERS\\S-1-5-18\\Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings\\Connections' -Name 'DefaultConnectionSettings' -Value ([byte[]](0x46, 0x00, 0x00, 0x00, 0x03, 0x00, 0x00, 0x00, 0x03, 0x00, 0x00, 0x00, 0x13, 0x00, 0x00, 0x00, 0x63, 0x6f, 0x72, 0x70, 0x2e, 0x63, 0x6f, 0x6e, 0x74, 0x6f, 0x73, 0x6f, 0x2e, 0x63, 0x6f, 0x6d, 0x3a, 0x38, 0x30, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00)) -PropertyType Binary -Force -ea SilentlyContinue; Restart-Computer -Force;}"
+					// "script": "Start-Process powershell -Verb runAs -ArgumentList { if ((Test-Path -LiteralPath 'Registry::\\HKEY_USERS\\S-1-5-18\\Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings\\Connections') -ne $true) { New-Item 'Registry::\\HKEY_USERS\\S-1-5-18\\Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings\\Connections' -Force -ea SilentlyContinue };New-ItemProperty -LiteralPath 'Registry::\\HKEY_USERS\\S-1-5-18\\Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings\\Connections' -Name 'DefaultConnectionSettings' -Value ([byte[]](0x46, 0x00, 0x00, 0x00, 0x03, 0x00, 0x00, 0x00, 0x03, 0x00, 0x00, 0x00, 0x13, 0x00, 0x00, 0x00, 0x63, 0x6f, 0x72, 0x70, 0x2e, 0x63, 0x6f, 0x6e, 0x74, 0x6f, 0x73, 0x6f, 0x2e, 0x63, 0x6f, 0x6d, 0x3a, 0x38, 0x30, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00)) -PropertyType Binary -Force -ea SilentlyContinue; Restart-Computer -Force;}"
+					"script": "Start-Process powershell -Verb runAs -ArgumentList { $proxy = 'C:\\Windows\\Microsoft.NET\\Framework64\\v4.0.30319\\Config\\machine.config';((Get-Content -Path $proxy -Raw).replace('</configuration>', '<system.net> <defaultProxy enabled=\"true\" useDefaultCredentials=\"true\"> <proxy usesystemdefault=\"false\" proxyaddress=\"<nowiki>http://corp.contoso.com:8080</nowiki>\" bypassonlocal=\"true\" /> <bypasslist> <add address=\"XYZ\" /> </bypasslist> </defaultProxy> </system.net> </configuration>')) | Set-Content -Path $proxy; Restart-Computer -Force;}"
 				},
 				"timeoutInSeconds": 60
 			}
@@ -251,3 +252,17 @@
 	],
 	"outputs": {}
 }
+
+// https://docs.blackberry.com/en/id-comm-collab/blackberry-athoc/blackberry-athoc/7_9/install/post-install-upgrade-config/configure-net-framework-web-proxy
+// https://github.com/MicrosoftDocs/MIMDocs/issues/99
+// https://learn.microsoft.com/en-us/azure/active-directory/app-proxy/application-proxy-configure-connectors-with-proxy-servers
+// https://learn.microsoft.com/en-us/dotnet/framework/configure-apps/file-schema/network/defaultproxy-element-network-settings
+
+// netsh winhttp set proxy http://corp.contoso.com:8080
+
+// "C:\WindowsAzure\Packages\CommonAgentConfig.config"
+// ((Get-Content -Path $config -Raw).replace('allowFastTrack="true"', 'allowFastTrack="false"')) | Set-Content -Path $config;
+
+// <configuration>
+// $proxy = 'C:\Windows\Microsoft.NET\Framework64\v4.0.30319\Config\machine.config';
+// ((Get-Content -Path $proxy -Raw).replace('</configuration>', '<system.net> <defaultProxy enabled="true" useDefaultCredentials="true"> <proxy usesystemdefault="false" proxyaddress="<nowiki>http://corp.contoso.com:8080</nowiki>" bypassonlocal="true" /> <bypasslist> <add address="XYZ" /> </bypasslist> </defaultProxy> </system.net> </configuration>')) | Set-Content -Path $proxy;
