@@ -14,4 +14,4 @@ sudo grub2-mkconfig -o /boot/grub2/grub.cfg
 
 sudo sed -i 's/BOOTPROTO=dhcp/BOOTPROTO=static/' /etc/sysconfig/network-scripts/ifcfg-eth0
 
-reboot
+shutdown -r
