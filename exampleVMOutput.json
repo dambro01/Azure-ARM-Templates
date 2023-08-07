@@ -9,7 +9,7 @@
 	"properties": {
 		"vmId": "b484b2ec-5d6f-4769-89bc-f8223a54b36c",
 		"hardwareProfile": {
-			"vmSize": "Standard_D2s_v3"
+			"vmSize": "Standard_B2ms"
 		},
 		"storageProfile": {
 			"imageReference": {

@@ -1,0 +1,1 @@
+// create VM with 4GB HDD managed disk, convert in Hyper-V, add to storage account as vhd, try to convert to managed disk

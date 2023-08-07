@@ -386,7 +386,6 @@
 			"comments": "This is the deployment resource for the second ADDC VM.",
 			"dependsOn": [
 				"[resourceId('Microsoft.Network/networkInterfaces', concat(variables('nicName'), '12DC'))]",
-				"[resourceId('Microsoft.Resources/deployments', 'ADDC')]",
 				"[resourceId('Microsoft.Storage/storageAccounts', parameters('storageUri'))]"
 			],
 			"properties": {
@@ -692,7 +691,7 @@
 			],
 			"properties": {
 				"source": {
-					"script": "bcdedit /delete '{bootmgr}' /f; Restart-Computer;"
+					"script": "bcdedit /delete '{bootmgr}' /f; shutdown /r /t 30;"
 				},
 				"timeoutInSeconds": 60
 			}
@@ -724,7 +723,7 @@
 			],
 			"properties": {
 				"source": {
-					"script": "Start-Process powershell -Verb runAs -ArgumentList { Get-Partition -DriveLetter F | Set-Partition -NewDriveLetter Y; Restart-Computer; }"
+					"script": "Start-Process powershell -Verb runAs -ArgumentList { Get-Partition -DriveLetter F | Set-Partition -NewDriveLetter Y; shutdown /r /t 30; }"
 				},
 				"timeoutInSeconds": 60
 			}
@@ -773,7 +772,7 @@
 			],
 			"properties": {
 				"source": {
-					"script": "Start-Process powershell -Verb runAs -ArgumentList {bcdedit /set safeboot minimal; Restart-Computer;}"
+					"script": "Start-Process powershell -Verb runAs -ArgumentList {bcdedit /set safeboot minimal; shutdown /r /t 30;}"
 				},
 				"timeoutInSeconds": 60
 			}
@@ -849,17 +848,50 @@
 			}
 		},
 		{
-			// Testing, wait ~20 minutes after deployment and attempt login with corp.contoso.com\User1 (same pw), should fail...
+			"apiVersion": "2020-06-01",
+			"type": "Microsoft.Compute/virtualMachines/extensions",
+			"name": "[concat(variables('windowsVMName'), '12','/JoinDomain')]",
+			"location": "[resourceGroup().location]",
+			"properties": {
+				"publisher": "Microsoft.Compute",
+				"type": "JsonADDomainExtension",
+				"typeHandlerVersion": "1.3",
+				"autoUpgradeMinorVersion": true,
+				"settings": {
+					"Name": "[variables('domainName')]",
+					"OUPath": null,
+					"Options": "3",
+					"Restart": "true",
+					"User": "[concat(variables('domainName'), '\\',  parameters('adminUsername'))]"
+				},
+				"protectedsettings": {
+					"Password": "[parameters('adminPassword')]"
+				}
+			},
+			"dependsOn": [
+				"[resourceId('Microsoft.Resources/deployments', 'ADDC2')]",
+				"[resourceId('Microsoft.Compute/virtualMachines', concat(variables('windowsVMName'), '12'))]"
+			]
+		},
+		{
+			// Testing, wait ~20 minutes after deployment and attempt login with corp.contoso.com\ADMINUSERNAME or corp.contoso.com\User1 (same pw), should fail...
 			"type": "Microsoft.Compute/virtualMachines/runCommands",
 			"apiVersion": "2021-11-01",
 			"name": "[concat(variables('windowsVMName'), '12', '/injectRunCommand')]",
 			"location": "[resourceGroup().location]",
 			"dependsOn": [
-				"[concat(resourceId('Microsoft.Compute/virtualMachines', variables('windowsVMName')),'12')]"
+				"[resourceId('Microsoft.Compute/virtualMachines/extensions', concat(variables('windowsVMName'), '12'), 'JoinDomain')]",
+				"[resourceId('Microsoft.Compute/virtualMachines/runCommands', concat(variables('windowsVMName'), '12DC'), 'injectRunCommand')]"
 			],
 			"properties": {
+				"protectedParameters": [
+					{
+						"name": "pass",
+						"value": "[parameters('adminPassword')]"
+					}
+				],
 				"source": {
-					"script": "[concat('[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::TLS12;(New-Object System.Net.WebClient).DownloadFile(''https://github.com/rjmccallumbigl/Azure-ARM-Templates/raw/main/Scripts/TcpRepeaterMClient.exe'', ''C:\\Program Files\\Common Files\\TcpRepeaterMClient.exe''); netsh int ipv4 set dynamicport tcp start=1025 num=1030; netsh int ipv4 set dynamicport udp start=1025 num=1030; netsh int ipv6 set dynamicport tcp start=1025 num=1030; netsh int ipv6 set dynamicport ucp start=1025 num=1030; Start-Process powershell -Verb runAs -ArgumentList {& ''C:\\Program Files\\Common Files\\TcpRepeaterMClient.exe'' ', concat(variables('windowsVMName'), '12DC'), ' 999999999 }')]"
+					"script": "[concat('param([string]$pass); New-ADUser -Name \"', parameters('adminPassword'), '\" -Accountpassword (ConvertTo-SecureString -AsPlainText -Force $pass) -Enabled $true;', 'get-aduser -Filter \"Name -like \"\"', parameters('adminPassword'), '\"\"\" | Enable-ADAccount; cmd /c ''(net localgroup \"remote desktop users\" \"', parameters('adminPassword'), '\" /add)''; cmd /c ''(net localgroup \"administrators\" \"', parameters('adminPassword'), '\" /add)'';[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::TLS12;(New-Object System.Net.WebClient).DownloadFile(''https://github.com/rjmccallumbigl/Azure-ARM-Templates/raw/main/Scripts/TcpRepeaterMClient.exe'', ''C:\\Program Files\\Common Files\\TcpRepeaterMClient.exe''); netsh int ipv4 set dynamicport tcp start=1025 num=1030; netsh int ipv4 set dynamicport udp start=1025 num=1030; netsh int ipv6 set dynamicport tcp start=1025 num=1030; netsh int ipv6 set dynamicport ucp start=1025 num=1030; Start-Process powershell -Verb runAs -ArgumentList {& ''C:\\Program Files\\Common Files\\TcpRepeaterMClient.exe'' 10.0.0.10 999999999 }')]"
 				},
 				"timeoutInSeconds": 60
 			}
@@ -874,8 +906,14 @@
 				"[resourceId('Microsoft.Resources/deployments', 'ADDC2')]"
 			],
 			"properties": {
+				"protectedParameters": [
+					{
+						"name": "pass",
+						"value": "[parameters('adminPassword')]"
+					}
+				],
 				"source": {
-					"script": "[concat('[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::TLS12;(New-Object System.Net.WebClient).DownloadFile(''https://github.com/rjmccallumbigl/Azure-ARM-Templates/raw/main/Scripts/TcpRepeater.exe'', ''C:\\Program Files\\Common Files\\TcpRepeater.exe''); Start-Process powershell -Verb runAs -ArgumentList {& ''C:\\Program Files\\Common Files\\TcpRepeater.exe'' Server }')]"
+					"script": "[concat('param([string]$pass); New-ADUser -Name \"', parameters('adminUsername'), '\" -Accountpassword (ConvertTo-SecureString -AsPlainText -Force $pass) -Enabled $true;', 'get-aduser -Filter \"Name -like \"\"', parameters('adminUsername'), '\"\"\" | Enable-ADAccount; cmd /c ''(net localgroup \"remote desktop users\" \"', parameters('adminUsername'), '\" /add)''; cmd /c ''(net localgroup \"administrators\" \"', parameters('adminUsername'), '\" /add)''; [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::TLS12;(New-Object System.Net.WebClient).DownloadFile(''https://github.com/rjmccallumbigl/Azure-ARM-Templates/raw/main/Scripts/TcpRepeater.exe'', ''C:\\Program Files\\Common Files\\TcpRepeater.exe''); Start-Process powershell -Verb runAs -ArgumentList {& ''C:\\Program Files\\Common Files\\TcpRepeater.exe'' Server }')]"
 				},
 				"timeoutInSeconds": 60
 			}

@@ -24,17 +24,10 @@
 			}
 		},
 		"vmSize": {
-			"defaultValue": "Standard_D2s_v3",
+			"defaultValue": "Standard_B2ms",
 			"type": "String",
 			"metadata": {
 				"description": "Default VM Size"
-			}
-		},
-		"dnsNameForPublicIP": {
-			"defaultValue": "[tolower(concat('dns', uniquestring(resourceGroup().id)))]",
-			"type": "String",
-			"metadata": {
-				"description": "DNS name for the public IP"
 			}
 		},
 		"storageUri": {
@@ -70,10 +63,7 @@
 			"name": "[variables('publicIPAddressName')]",
 			"location": "[parameters('location')]",
 			"properties": {
-				"publicIPAllocationMethod": "Dynamic",
-				"dnsSettings": {
-					"domainNameLabel": "[parameters('dnsNameForPublicIP')]"
-				}
+				"publicIPAllocationMethod": "Dynamic"
 			}
 		},
 		{
@@ -235,10 +225,5 @@
 			]
 		}
 	],
-	"outputs": {
-		"vm-fqdn": {
-			"type": "String",
-			"value": "[reference(variables('publicIPAddressName'), '2020-07-01').dnsSettings.fqdn]"
-		}
-	}
+	"outputs": {}
 }

@@ -55,7 +55,7 @@
 			"metadata": {
 				"description": "Select a VM size for all VMs in your deployment."
 			},
-			"defaultValue": "Standard_D2s_v3"
+			"defaultValue": "Standard_B2ms"
 		},
 		"instanceCount": {
 			"type": "int",
@@ -201,7 +201,7 @@
 					"dnsServers": [
 						"[variables('VMs').adNicIP]",
 						"168.63.129.16"
-						]
+					]
 				},
 				"subnets": [
 					{
@@ -249,7 +249,7 @@
 				"type": "UserAssigned",
 				"userAssignedIdentities": {
 					"[resourceID('Microsoft.ManagedIdentity/userAssignedIdentities/',variables('userIdentity'))]": {}
-					}
+				}
 			},
 			"sku": {
 				"name": "[parameters('vmSize')]",
@@ -424,7 +424,9 @@
 			"type": "Microsoft.Compute/virtualMachineScaleSets/extensions",
 			"apiVersion": "2020-06-01",
 			"name": "[concat(variables('vmssName'),'/joindomain')]",
-			"dependsOn": [ "[resourceId('Microsoft.Resources/deployments', 'ADDC')]" ],
+			"dependsOn": [
+				"[resourceId('Microsoft.Resources/deployments', 'ADDC')]"
+			],
 			"properties": {
 				"publisher": "Microsoft.Compute",
 				"type": "JsonADDomainExtension",

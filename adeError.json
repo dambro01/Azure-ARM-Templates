@@ -10,6 +10,13 @@
 		"deploymentLink": "https://labbox.azurewebsites.net/api/Labbox?url=https://raw.githubusercontent.com/rjmccallumbigl/Azure-ARM-Templates/main/adeError.json"
 	},
 	"parameters": {
+		"objectId": {
+			"type": "String",
+			"metadata": {
+				"description": "Specifies your object ID. Get it by using Get-AzADUser -SignedIn cmdlet. If left as the default value 'UserIdentityObjectID', the UserIdentity will be used to encrypt the VM and you will not be able to view the relevant Key Vault data."
+			},
+			"defaultValue": "UserIdentityObjectID"
+		},
 		"adminUsername": {
 			"type": "String",
 			"maxLength": 20,
@@ -59,12 +66,6 @@
 		"keyName": {
 			"defaultValue": "[concat('key-', uniqueString(resourceGroup().id))]",
 			"type": "String"
-		},
-		"objectId": {
-			"type": "String",
-			"metadata": {
-				"description": "Specifies your object ID. Get it by using Get-AzADUser -SignedIn cmdlet."
-			}
 		},
 		"utcValue": {
 			"defaultValue": "[utcNow()]",
@@ -128,7 +129,9 @@
 				"tenantId": "[subscription().tenantId]",
 				"accessPolicies": [
 					{
-						"objectId": "[parameters('objectId')]",
+						// "objectId": "[parameters('objectId')]",
+						// "objectId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities',variables('userIdentity')), '2018-11-30', 'full').properties.clientId]",
+						"objectId": "[if(equals('UserIdentityObjectID', parameters('objectId')), reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities',variables('userIdentity')), '2018-11-30', 'full').properties.clientId, parameters('objectId'))]",
 						"tenantId": "[subscription().tenantId]",
 						"permissions": {
 							"keys": [
